@@ -21,6 +21,22 @@ const getQuery = async (req, res) => {
   }
 };
 
+const getInvoices = async (req, res) => {
+  try {
+    const response = await pool.query("SELECT * FROM master.tbl_consumos");
+    const invoices = response.rows.map((invoice) => {
+      return {
+        ...invoice,
+        price: [invoice.price],
+      };
+    });
+    res.status(200).json(invoices);
+  } catch (error) {
+    res.json(error);
+  }
+};
+
 module.exports = {
   getQuery,
+  getInvoices,
 };
