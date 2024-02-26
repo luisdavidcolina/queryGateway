@@ -110,11 +110,15 @@ const getBookings = async (req, res) => {
 
   try {
     const response = await pool.query(query, values);
-    const bookings = response.rows.map(temp => {
+    const bookings = await Promise.all(response.rows.map(async temp => {
       const date1 = new Date(temp.check_in_fecha);
       const date2 = new Date(temp.check_out_fecha);
       const diffTime = Math.abs(date2 - date1);
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      // Query adicional a TblReservasDetalle con el esquema
+      const fecha_chec_in_response = await pool.query(`SELECT check_in_fecha FROM ${schema}.tbl_reservas_detalle WHERE id_reservas_grupo = $1 ORDER BY check_in_fecha LIMIT 1`, [temp.id_grupo]);
+      const fecha_chec_in = fecha_chec_in_response.rows[0].check_in_fecha;
 
       return {
         ...temp,
@@ -128,13 +132,13 @@ const getBookings = async (req, res) => {
         nombre_departamento: "",
         habitacion_tipo: temp.id_habitacion_tipo,
         nombre_pais: "",
-        check_in_fecha: temp.check_in_fecha,
+        check_in_fecha: fecha_chec_in,
         start: new Date(date1.getFullYear(), date1.getMonth(), date1.getDate()),
         grupos: this.detallesGrupos(temp.id_reservas),
         detalles: this.detalles(temp, temp.id_reservas),
         checkOut: this.InfoPagos(temp.id_reservas, temp.numero),
       };
-    });
+    }));
 
     res.status(200).json(bookings);
   } catch (error) {
@@ -142,7 +146,6 @@ const getBookings = async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
-
 
 
 module.exports = {
