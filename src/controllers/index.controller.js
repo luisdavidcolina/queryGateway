@@ -166,7 +166,12 @@ function formatDate(date) {
   const year = date.getFullYear(); // Obtener el año de la fecha
   const month = String(date.getMonth() + 1).padStart(2, "0"); // Obtener el mes de la fecha
   const day = String(date.getDate()).padStart(2, "0"); // Obtener el día del mes de la fecha
-  return `${year}-${month}-${day}`; // Crear la fecha en formato Y-m-d
+  const hours = String(date.getHours()).padStart(2, "0"); // Obtener las horas de la fecha
+  const minutes = String(date.getMinutes()).padStart(2, "0"); // Obtener los minutos de la fecha
+  const seconds = String(date.getSeconds()).padStart(2, "0"); // Obtener los segundos de la fecha
+  const milliseconds = String(date.getMilliseconds()).padStart(3, "0"); // Obtener los milisegundos de la fecha
+
+  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}Z`; // Crear la fecha en formato 2024-02-26T05:00:00.000Z
 }
 
 
