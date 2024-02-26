@@ -36,7 +36,7 @@ const getInvoices = async (req, res) => {
   }
 };
 
-const detallesGrupos = async (id_reserva) => {
+const detallesGrupos = async (id_reserva, schema = 'master') => {
   const query = `
     SELECT
       tbl_reservas_grupo.id_reservas_estado,
@@ -93,8 +93,23 @@ const detallesGrupos = async (id_reserva) => {
     return [];
   }
 };
+const dia = (fecha) => {
+  const dias = {
+    Monday: "Lunes",
+    Tuesday: "Martes",
+    Wednesday: "Miércoles",
+    Thursday: "Jueves",
+    Friday: "Viernes",
+    Saturday: "Sábado",
+    Sunday: "Domingo",
+  };
+  const fechaDate = new Date(fecha);
+  const nombreDia = fechaDate.toLocaleDateString('es-ES', { weekday: 'long' });
+  return dias[nombreDia];
+};
 
-const detalles = (data, id) => {
+
+const detalles = (data, id, schema = 'master') => {
   const detalles = {
     regalo: "",
     cantidad_huespedes: data.cantidad_huespedes,
@@ -119,9 +134,9 @@ const detalles = (data, id) => {
   return detalles;
 };
 
-const InfoPagos = async (reserva_id, numero) => {
+const InfoPagos = async (reserva_id, numero, schema = 'master') => {
   const query = `
-    SELECT * FROM pago_total
+    SELECT * FROM ${schema}.pago_total
     WHERE numero = $1 AND reserva_id = $2
   `;
   const values = [numero, reserva_id];
@@ -145,6 +160,7 @@ const InfoPagos = async (reserva_id, numero) => {
     return 0;
   }
 };
+
 
 
 const getBookings = async (req, res) => {
@@ -245,9 +261,9 @@ const getBookings = async (req, res) => {
         nombre_pais: "",
         check_in_fecha: fecha_chec_in,
         start: new Date(date1.getFullYear(), date1.getMonth(), date1.getDate()),
-        grupos: await detallesGrupos(temp.id_reservas),
-        detalles:  detalles(temp, temp.id_reservas),
-        checkOut: await InfoPagos(temp.id_reservas, temp.numero),
+        grupos: await detallesGrupos(temp.id_reservas, schema),
+        detalles:  detalles(temp, temp.id_reservas, schema),
+        checkOut: await InfoPagos(temp.id_reservas, temp.numero, schema),
       };
     }));
 
