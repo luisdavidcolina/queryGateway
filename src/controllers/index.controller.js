@@ -36,6 +36,117 @@ const getInvoices = async (req, res) => {
   }
 };
 
+const detallesGrupos = async (id_reserva) => {
+  const query = `
+    SELECT
+      tbl_reservas_grupo.id_reservas_estado,
+      tbl_reservas_grupo.id as id_grupo,
+      tbl_reservas_detalle.adultos_cantidad as cantidad_adultos,
+      tbl_reservas_detalle.ninos_cantidad as cantidad_ninos,
+      tbl_reservas_detalle.infantes_cantidad as cantidad_infantes,
+      (tbl_reservas_detalle.adultos_cantidad + tbl_reservas_detalle.ninos_cantidad + tbl_reservas_detalle.infantes_cantidad) AS cantidad_huespedes,
+      tbl_reservas_detalle.id_habitacion,
+      tbl_habitaciones_tipo.nombre as habitacion_tipo,
+      tbl_reservas_detalle.id_habitacion_tipo,
+      tbl_reservas_grupo.id_reservas,
+      tbl_reservas_grupo.id as clave_grupo,
+      tbl_habitaciones.numero as habitacion_numero,
+      tbl_habitaciones.personas_minimo as habitacion_personas_minimo,
+      tbl_habitaciones.personas_maximo as habitacion_personas_maximo
+    FROM ${schema}.tbl_reservas_detalle
+    JOIN ${schema}.tbl_habitaciones_tipo ON tbl_reservas_detalle.id_habitacion_tipo = tbl_habitaciones_tipo.id
+    LEFT JOIN ${schema}.tbl_reservas_grupo ON tbl_reservas_detalle.id_reservas_grupo = tbl_reservas_grupo.id
+    JOIN ${schema}.tbl_habitaciones ON tbl_reservas_detalle.id_habitacion = tbl_habitaciones.id
+    WHERE tbl_reservas_grupo.id_reservas = $1
+      AND tbl_reservas_grupo.deleted_at IS NULL
+      AND tbl_reservas_detalle.deleted_at IS NULL
+    GROUP BY
+      tbl_reservas_grupo.id_reservas_estado,
+      tbl_reservas_grupo.id,
+      tbl_reservas_detalle.id_habitacion_tipo,
+      tbl_reservas_detalle.adultos_cantidad,
+      tbl_reservas_detalle.ninos_cantidad,
+      tbl_reservas_detalle.infantes_cantidad,
+      tbl_reservas_detalle.id_habitacion,
+      tbl_habitaciones_tipo.nombre,
+      tbl_reservas_grupo.id_reservas,
+      tbl_reservas_grupo.id,
+      tbl_habitaciones.numero,
+      tbl_habitaciones.personas_minimo,
+      tbl_habitaciones.personas_maximo
+  `;
+  const values = [id_reserva];
+
+  try {
+    const response = await pool.query(query, values);
+    const data = response.rows.map(temp => ({
+      ...temp,
+      huespedes: huespedes_habitacion(temp.id_grupo),
+      pagadores: pagadores_habitacion(temp.id_grupo),
+      fecha_ingreso: fechaIngreso(temp.id_grupo),
+      fecha_salida: fechaSalida(temp.id_grupo),
+    }));
+
+    return data;
+  } catch (error) {
+    console.error('Error executing query:', error);
+    return [];
+  }
+};
+
+const detalles = (data, id) => {
+  const detalles = {
+    regalo: "",
+    cantidad_huespedes: data.cantidad_huespedes,
+    nombre_tipo: data.nombre_tipo,
+    nombre_fuente: data.nombre_fuente,
+    numero: data.numero,
+    id_cliente: data.id_cliente,
+    cliente: data.nombre + " " + data.apellido,
+    direccion: data.calle_residencia,
+    zipcode: data.codigo_postal_residencia,
+    ciudad: "-" + data.nombre_departamento,
+    pais: data.nombre_pais,
+    language: "Español",
+    llegada_hora: data.check_in_hora,
+    llegada_fecha: data.check_in_fecha,
+    llegada_fecha_dia: dia(data.check_in_fecha),
+    salida: data.check_out_fecha,
+    salida_dia: dia(data.check_out_fecha),
+    noches: data.dias,
+    habitacion_tipo: data.habitacion_tipo,
+  };
+  return detalles;
+};
+
+const InfoPagos = async (reserva_id, numero) => {
+  const query = `
+    SELECT * FROM pago_total
+    WHERE numero = $1 AND reserva_id = $2
+  `;
+  const values = [numero, reserva_id];
+
+  try {
+    const response = await pool.query(query, values);
+    if (response.rows.length === 0) {
+      return 1;
+    } else {
+      let pago = 0;
+      for (const temp of response.rows) {
+        if (temp.valor_pagado < temp.total_a_pagar) {
+          pago = 1;
+          break;
+        }
+      }
+      return pago;
+    }
+  } catch (error) {
+    console.error('Error executing query:', error);
+    return 0;
+  }
+};
+
+
 const getBookings = async (req, res) => {
   const { filtro_calendario, schema = 'master' } = req.params;
   const fecha_referencia = filtro_calendario || new Date();
@@ -134,9 +245,9 @@ const getBookings = async (req, res) => {
         nombre_pais: "",
         check_in_fecha: fecha_chec_in,
         start: new Date(date1.getFullYear(), date1.getMonth(), date1.getDate()),
-        grupos: this.detallesGrupos(temp.id_reservas),
-        detalles: this.detalles(temp, temp.id_reservas),
-        checkOut: this.InfoPagos(temp.id_reservas, temp.numero),
+        grupos: await detallesGrupos(temp.id_reservas),
+        detalles:  detalles(temp, temp.id_reservas),
+        checkOut: await InfoPagos(temp.id_reservas, temp.numero),
       };
     }));
 
