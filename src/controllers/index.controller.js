@@ -162,6 +162,13 @@ const InfoPagos = async (reserva_id, numero, schema = 'master') => {
 };
 
 
+function formatDate(date) {
+  const year = date.getFullYear(); // Obtener el año de la fecha
+  const month = String(date.getMonth() + 1).padStart(2, "0"); // Obtener el mes de la fecha
+  const day = String(date.getDate()).padStart(2, "0"); // Obtener el día del mes de la fecha
+  return `${year}-${month}-${day}`; // Crear la fecha en formato Y-m-d
+}
+
 
 const getBookings = async (req, res) => {
   const { filtro_calendario, schema = 'master' } = req.params;
@@ -231,8 +238,8 @@ const getBookings = async (req, res) => {
     ORDER BY check_in_fecha DESC
   `;
   const values = [
-    new Date(fecha_referencia.getFullYear(), fecha_referencia.getMonth(), fecha_referencia.getDate() - 5),
-    new Date(fecha_referencia.getFullYear(), fecha_referencia.getMonth(), fecha_referencia.getDate() + 70),
+    formatDate(new Date(fecha_referencia.getFullYear(), fecha_referencia.getMonth(), fecha_referencia.getDate() - 5)),
+    formatDate(new Date(fecha_referencia.getFullYear(), fecha_referencia.getMonth(), fecha_referencia.getDate() + 70)),
   ];
 
   try {
