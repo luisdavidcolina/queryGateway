@@ -143,10 +143,9 @@ const getBookings = async (req, res) => {
     res.status(200).json(bookings);
   } catch (error) {
     console.error('Error executing query:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: 'Internal Server Error', message: error.message });
   }
 };
-
 
 module.exports = {
   getQuery,
