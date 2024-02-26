@@ -110,12 +110,39 @@ const getBookings = async (req, res) => {
 
   try {
     const response = await pool.query(query, values);
-    res.status(200).json(response.rows);
+    const bookings = response.rows.map(temp => {
+      const date1 = new Date(temp.check_in_fecha);
+      const date2 = new Date(temp.check_out_fecha);
+      const diffTime = Math.abs(date2 - date1);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      return {
+        ...temp,
+        id: temp.id_reservas,
+        zipcode: "",
+        ciudad: "",
+        pais: "",
+        dias: diffDays,
+        calle_residencia: "",
+        codigo_postal_residencia: "",
+        nombre_departamento: "",
+        habitacion_tipo: temp.id_habitacion_tipo,
+        nombre_pais: "",
+        check_in_fecha: temp.check_in_fecha,
+        start: new Date(date1.getFullYear(), date1.getMonth(), date1.getDate()),
+        grupos: this.detallesGrupos(temp.id_reservas),
+        detalles: this.detalles(temp, temp.id_reservas),
+        checkOut: this.InfoPagos(temp.id_reservas, temp.numero),
+      };
+    });
+
+    res.status(200).json(bookings);
   } catch (error) {
     console.error('Error executing query:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
+
 
 
 module.exports = {
