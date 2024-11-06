@@ -291,19 +291,7 @@ const getBookings = async (req, res) => {
   }
 };
 
-const { Pool, types } = require("pg");
 
-types.setTypeParser(1114, function(stringValue) {
-  return stringValue;
-});
-
-const pool = new Pool({
-  user: "diamond",
-  host: "127.0.0.1",
-  database: "hotel",
-  password: "lksdfgj53fd",
-  port: 5432,
-});
 
 const cloneSchemaWithEmptyTables = async (req, res) => {
   const { hotelName } = req.body; // Parámetro del nombre del hotel
