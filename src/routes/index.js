@@ -6,7 +6,7 @@ const { getQuery, getInvoices, getBookings, cloneSchemaWithEmptyTables} = requir
 router.get("/query/:id", getQuery);
 router.get("/invoices", getInvoices);
 router.get("/bookings", getBookings);
-router.get("/cloneSchemaWithEmptyTables", cloneSchemaWithEmptyTables);
+router.get("/cloneSchemaWithEmptyTables/:name", cloneSchemaWithEmptyTables);
 
 
 

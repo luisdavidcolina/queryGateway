@@ -294,7 +294,7 @@ const getBookings = async (req, res) => {
 
 
 const cloneSchemaWithEmptyTables = async (req, res) => {
-  const { hotelName } = req.body; // Parámetro del nombre del hotel
+  const { hotelName } = req.params;
   const newSchema = `hotel_${hotelName}`;
 
   // Tablas de las que se copiarán tanto la estructura como los datos
