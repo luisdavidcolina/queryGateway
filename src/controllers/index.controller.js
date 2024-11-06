@@ -291,8 +291,82 @@ const getBookings = async (req, res) => {
   }
 };
 
+const { Pool, types } = require("pg");
+
+types.setTypeParser(1114, function(stringValue) {
+  return stringValue;
+});
+
+const pool = new Pool({
+  user: "diamond",
+  host: "127.0.0.1",
+  database: "hotel",
+  password: "lksdfgj53fd",
+  port: 5432,
+});
+
+const cloneSchemaWithEmptyTables = async (req, res) => {
+  const { hotelName } = req.body; // Parámetro del nombre del hotel
+  const newSchema = `hotel_${hotelName}`;
+
+  // Tablas de las que se copiarán tanto la estructura como los datos
+  const tablesToCopyData = [
+    "model_has_roles",
+    "tbl_camas",
+    "tbl_clientes_tipo",
+    "tbl_categorias",
+    "tbl_config",
+    "tbl_desayunos",
+    "tbl_documento_tipo",
+    "tbl_generos",
+    "tbl_habitaciones_detalle_estado",
+    "tbl_habitaciones_estado",
+    "tbl_habitaciones_tipo",
+    "tbl_hoteles",
+    "tbl_idiomas",
+    "tbl_iframes",
+    "tbl_impuestos",
+    "tbl_impuestos_productos",
+    "tbl_monedas",
+    "tbl_paises",
+    "tbl_puntos_ventas",
+    "tbl_rate",
+    "tbl_tipo_pagos"
+  ];
+
+  try {
+    // Crear el nuevo esquema
+    await pool.query(`CREATE SCHEMA IF NOT EXISTS ${newSchema}`);
+
+    // Obtener todas las tablas del esquema original
+    const { rows: allTables } = await pool.query(`
+      SELECT table_name
+      FROM information_schema.tables
+      WHERE table_schema = 'hotel_hotelkamana'
+    `);
+
+    // Clonar tablas con y sin datos
+    for (const { table_name } of allTables) {
+      const createTableQuery = `CREATE TABLE ${newSchema}.${table_name} (LIKE hotel_hotelkamana.${table_name} INCLUDING ALL)`;
+      await pool.query(createTableQuery);
+
+      // Solo copiar datos para las tablas especificadas
+      if (tablesToCopyData.includes(table_name)) {
+        await pool.query(`INSERT INTO ${newSchema}.${table_name} SELECT * FROM hotel_hotelkamana.${table_name}`);
+      }
+    }
+
+    res.status(200).json({ message: `Schema ${newSchema} created successfully with specified tables copied.` });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+
 module.exports = {
   getQuery,
   getInvoices,
-  getBookings
+  getBookings,
+  cloneSchemaWithEmptyTables
 };
