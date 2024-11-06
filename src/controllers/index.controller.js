@@ -335,12 +335,12 @@ const cloneSchemaWithEmptyTables = async (req, res) => {
 
     // Clonar tablas con y sin datos
     for (const { table_name } of allTables) {
-      const createTableQuery = `CREATE TABLE ${newSchema}.${table_name} (LIKE hotel_hotelkamana.${table_name} INCLUDING ALL)`;
+      const createTableQuery = `CREATE TABLE ${newSchema}."${table_name}" (LIKE hotel_hotelkamana."${table_name}" INCLUDING ALL)`;
       await pool.query(createTableQuery);
 
       // Solo copiar datos para las tablas especificadas
       if (tablesToCopyData.includes(table_name)) {
-        await pool.query(`INSERT INTO ${newSchema}.${table_name} SELECT * FROM hotel_hotelkamana.${table_name}`);
+        await pool.query(`INSERT INTO ${newSchema}."${table_name}" SELECT * FROM hotel_hotelkamana."${table_name}"`);
       }
     }
 
