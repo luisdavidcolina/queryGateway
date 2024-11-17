@@ -54,23 +54,19 @@ int main()
     last = NULL;
 
 
-	char i = '\0';
+	char i[20];
 	char string[100];
 	char *frase = "Escriba su nombre:";
 
 	printf("%s", frase);
-	scanf("%s", &string);
+	scanf("%99s", string);
 	printword(string);
 	printf("Ingrese su C.I: \n");
 
-	while (1)
-    {
-        scanf(" %c", &i);
-        if (i == '\n') 
-        {
-            break;
-        }
-        Agregar_elemento(i);
+	scanf("%19s", i); 
+
+    for (int j = 0; i[j] != '\0'; j++) {
+        Agregar_elemento(i[j]);
     }
 
 	Imprimir_cedula();
