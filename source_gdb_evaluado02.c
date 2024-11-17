@@ -8,22 +8,26 @@ typedef struct Nodo
 } Nodo;
 Nodo *first, *last;
 
-
-void Agregar_elemento(char data) {
-    Nodo *Auxiliar = malloc(sizeof(Nodo));
-    if (first == NULL) {
-        Auxiliar->data = data;
-        Auxiliar->next = NULL;
-        first = Auxiliar;
-    } else {
-        last = first;
-        while (last->next != NULL) {
-            last = last->next;
-        }
-        last->next = Auxiliar;
-        Auxiliar->data = data;
-        Auxiliar->next = NULL;
-    }
+void Agregar_elemento(char data)
+{
+	Nodo *Auxiliar = malloc(sizeof(Nodo));
+	if (first == NULL)
+	{
+		Auxiliar->data = data;
+		Auxiliar->next = NULL;
+		first = Auxiliar;
+	}
+	else
+	{
+		last = first;
+		while (last->next != NULL)
+		{
+			last = last->next;
+		}
+		last->next = Auxiliar;
+		Auxiliar->data = data;
+		Auxiliar->next = NULL;
+	}
 }
 
 void printword(char *string)
@@ -32,19 +36,20 @@ void printword(char *string)
 	return;
 }
 
-void Imprimir_cedula() {
-    last = first;
-    while (last != NULL) { 
-        printf("%c", last->data);
-        last = last->next;
-    }
-    printf("\n"); 
+void Imprimir_cedula()
+{
+	last = first;
+	while (last != NULL)
+	{
+		printf("%c", last->data);
+		last = last->next;
+	}
+	printf("\n");
 }
-
 
 int main()
 {
-	char i;
+	char i = '\0';
 	char string[100];
 	char *frase = "Escriba su nombre:";
 
@@ -53,11 +58,14 @@ int main()
 	printword(string);
 	printf("Ingrese su C.I: \n");
 
-	while (i != '\n') {
-		scanf(" %c", &i); 
-		Agregar_elemento(i);
+	while (i != '\n')
+	{
+		scanf(" %c", &i);
+		if (i != '\n')
+		{
+			Agregar_elemento(i);
+		}
 	}
-
 	Imprimir_cedula();
 	return 1;
 }
