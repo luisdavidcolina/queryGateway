@@ -40,7 +40,7 @@ void Imprimir_cedula() {
 
 int main () {
 	char i;
-	char *string;
+	char string[100];
 	char *frase="Escriba su nombre:";
 
 	printf("%s",frase);
