@@ -36,15 +36,15 @@ void printword(char *string)
 	return;
 }
 
-void Imprimir_cedula()
-{
-	last = first;
-	while (1)
-	{
-		printf("%c", last->data);
-		last = last->next;
-	}
+void Imprimir_cedula() {
+    last = first;
+    while (last != NULL) { 
+        printf("%c", last->data);
+        last = last->next;
+    }
+    printf("\n"); 
 }
+
 
 int main()
 {
