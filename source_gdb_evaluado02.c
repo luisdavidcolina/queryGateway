@@ -49,6 +49,11 @@ void Imprimir_cedula()
 
 int main()
 {
+
+	first = NULL;
+    last = NULL;
+
+	
 	char i = '\0';
 	char string[100];
 	char *frase = "Escriba su nombre:";
