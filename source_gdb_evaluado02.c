@@ -8,26 +8,22 @@ typedef struct Nodo
 } Nodo;
 Nodo *first, *last;
 
-void Agregar_elemento(char data)
-{
-	struct Nodo *Auxiliar = malloc(sizeof(struct Nodo));
-	if (first == NULL)
-	{
-		Auxiliar->data = data;
-		Auxiliar->next = NULL;
-	}
-	else
-	{
-		last = first;
-		while (last->next != NULL)
-		{
-			last = last->next;
-		}
-		last->next = Auxiliar;
-		Auxiliar->data = data;
-		Auxiliar->next = NULL;
-	}
-	return;
+
+void Agregar_elemento(char data) {
+    Nodo *Auxiliar = malloc(sizeof(Nodo));
+    if (first == NULL) {
+        Auxiliar->data = data;
+        Auxiliar->next = NULL;
+        first = Auxiliar;
+    } else {
+        last = first;
+        while (last->next != NULL) {
+            last = last->next;
+        }
+        last->next = Auxiliar;
+        Auxiliar->data = data;
+        Auxiliar->next = NULL;
+    }
 }
 
 void printword(char *string)
