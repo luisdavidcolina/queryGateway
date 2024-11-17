@@ -307,6 +307,7 @@ const cloneSchemaWithEmptyTables = async (req, res) => {
     "tbl_desayunos",
     "tbl_documento_tipo",
     "tbl_generos",
+    "tbl_habitaciones",
     "tbl_habitaciones_detalle_estado",
     "tbl_habitaciones_estado",
     "tbl_habitaciones_tipo",
