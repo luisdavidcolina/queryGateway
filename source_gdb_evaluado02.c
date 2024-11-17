@@ -14,8 +14,7 @@ void Agregar_elemento(char data)
     Nodo *Auxiliar = malloc(sizeof(Nodo));
     if (Auxiliar == NULL)
     {
-        printf("Error al asignar memoria.\n");
-        exit(1);
+        exit(1); // Finaliza si falla la asignación de memoria
     }
 
     Auxiliar->data = data;
@@ -52,17 +51,6 @@ void Imprimir_cedula()
     printf("\n");
 }
 
-void liberar_lista()
-{
-    Nodo *temp;
-    while (first != NULL)
-    {
-        temp = first;
-        first = first->next;
-        free(temp);
-    }
-}
-
 int main()
 {
     first = NULL;
@@ -72,27 +60,22 @@ int main()
     char string[100];
     char *frase = "Escriba su nombre:";
 
-    printf("%s ", frase);
-    scanf("%s", string); // Lee el nombre
+    printf("%s", frase);
+    scanf("%s", string);
     printword(string);
-    printf("\nIngrese su C.I (termina con Enter): \n");
+    printf("Ingrese su C.I: \n");
 
-    // Usar un espacio antes de %c en scanf para ignorar caracteres residuales
     while (1)
     {
         scanf(" %c", &i);
-        if (i == '\n') // Finalizar cuando se presione Enter
+        if (i == '\n')
         {
             break;
         }
         Agregar_elemento(i);
     }
 
-    // Imprime los datos de la lista
-    printf("C.I ingresada: ");
     Imprimir_cedula();
 
-    // Libera la memoria utilizada
-    liberar_lista();
-    return 0;
+    return 1;
 }
