@@ -32,7 +32,7 @@ void Agregar_elemento(char data)
 
 void printword(char *string)
 {
-	printf("%s", string);
+	printf("%s\n", string);
 	return;
 }
 
@@ -53,12 +53,11 @@ int main()
 	first = NULL;
     last = NULL;
 
-
 	char i[20];
 	char string[100];
 	char *frase = "Escriba su nombre:";
 
-	printf("%s", frase);
+	printf("%s\n", frase);
 	scanf("%99s", string);
 	printword(string);
 	printf("Ingrese su C.I: \n");
