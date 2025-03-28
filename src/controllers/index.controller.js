@@ -351,9 +351,36 @@ const cloneSchemaWithEmptyTables = async (req, res) => {
   }
 };
 
+const starbucksIntegration = async (req, res) => {
+  try {
+    let body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+    const headers = req.headers;
+    let filename = headers.filename;
+
+    // Procesamiento del filename para extraer locationName
+    let locationName = filename.slice(0, filename.indexOf(' ')).trim().replace(/ /g, '').toLowerCase();
+    locationName = locationName === 'rivertownplaza' ? 'rivertown' : locationName;
+    
+    // Lista de tiendas permitidas
+    const allowedLocationNames = ['doradoexpress', 'caribehilton', 'starbucks'];
+    if (!allowedLocationNames.includes(locationName)) {
+      return res.json({ status: 'recibido pero no publicado' });
+    }
+    
+    // Enviar datos a Workforce
+    const dataPoints = body;
+    const workforce_tools = require("./process_oracle.js");
+    const status = await workforce_tools.sendDataToWorkforce(dataPoints, locationName);
+    
+    return res.json({ status });
+  } catch (e) {
+    return res.status(500).json({ error: e.message || 'Error interno del servidor' });
+  }
+};
 
 
 module.exports = {
+  starbucksIntegration,
   getQuery,
   getInvoices,
   getBookings,
