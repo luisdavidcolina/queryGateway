@@ -62,8 +62,13 @@ function getTypeForDataStream(dataStreamName) {
 }
 
 async function sendDataToWorkforce(data, locationName, businessDateOld) {
+
+
     let businessDate
     let jsonWorkforceDataStreams = await getDataStreamListFromWorkforce('cc56e0550daabe8c1eb753d2cbed1b9e6485b20313b8f9ea59cfea11f72f975e', locationName);
+
+    console.log(data)
+
 
 
     return new Promise(async (resolve, reject) => {
