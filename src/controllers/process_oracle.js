@@ -100,8 +100,14 @@ async function sendDataToWorkforce(data, locationName, businessDateOld) {
                 if (!dataStreamNames[0].includes('MODIFIERS')) {
 
                     for (let i = 0; i < dataStreamNames.length; i++) {
-                        let dataStreamName = dataStreamNames[i].replaceAll(' ', '').toLowerCase();
-                        dataStreamName = dataStreamName.includes('rivertownplaza') ? dataStreamName.replace('rivertownplaza', 'rivertown') : dataStreamName
+                        let dataStreamName = typeof dataStreamNames[i] === "string" 
+            ? dataStreamNames[i].split(' ').join('').toLowerCase() 
+            : ''; // Cambio aquí
+
+        dataStreamName = dataStreamName.includes('rivertownplaza') 
+            ? dataStreamName.replace('rivertownplaza', 'rivertown') 
+            : dataStreamName;
+
                         let dataStreamId = jsonWorkforceDataStreams[dataStreamName];
                         if (!dataStreamId) {
                             console.error(`Data stream not found in Workforce: ${dataStreamNames[i]}`);
@@ -199,7 +205,7 @@ async function getDataStreamListFromWorkforce(token, locationName) {
     jsonWorkforceDataStreams = (JSON.parse(jsonWorkforceDataStreams));
     const dict = {}
     jsonWorkforceDataStreams.forEach(function (x) {
-        let streamName = x.name.replaceAll(' ', '').toLowerCase();
+        let streamName = typeof x.name === "string" ? x.name.split(' ').join('').toLowerCase() : '';
         if (streamName.includes(locationName.toLowerCase())) {
             if (!(streamName.includes('sales') || streamName.includes('checks'))) {
                 if (streamName.includes('sand/ppdfood')) {
