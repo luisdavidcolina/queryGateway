@@ -362,7 +362,43 @@ const starbucksIntegration = async (req, res) => {
     locationName = locationName === 'rivertownplaza' ? 'rivertown' : locationName;
     
     // Lista de tiendas permitidas
-    const allowedLocationNames = ['doradoexpress', 'caribehilton', 'starbucks'];
+    const allowedLocationNames = ['aeropuerto',
+      'anag.mendez',
+      'bairoa',
+      'buchanan',
+      'calacostas',
+      'caribehilton',
+      'colobos',
+      'condadoplaza',
+      'condadovillage',
+      'doradoexpress',
+      'doubletree',
+      'escorial',
+      'express',
+      'gardenhills',
+      'hotelsanjuan',
+      'losprados',
+      'macysponce',
+      'montehiedra',
+      'osj1-tetuanstreet',
+      'pdckiosk',
+      'paseoslascumbres',
+      'plazacarolinamall',
+      'plazadelmar',
+      'plazadorada',
+      'plazalasamericas',
+      'plazaolmedo',
+      'plazasultana',
+      'plazadelsol',
+      'plazalasamericas2',
+      'plazoleta169',
+      'riohondo',
+      'sanpatricio',
+      'santaisabel',
+      'rivertown',
+      'auxiliomutuo'
+  
+  ];
     if (!allowedLocationNames.includes(locationName)) {
       return res.json({ status: 'recibido pero no publicado' });
     }
