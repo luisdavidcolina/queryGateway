@@ -354,7 +354,7 @@ const cloneSchemaWithEmptyTables = async (req, res) => {
 const starbucksIntegration = async (req, res) => {
   try {
     let body;
-    return res.json({ 'ok' });
+    return res.status(200).json({ status: 'recibido' });
 
     // Verificar si req.body es un JSON válido o un string plano
     if (typeof req.body === "string") {
