@@ -9,7 +9,7 @@ const client = new Client({
   connectionTimeoutMillis: 5000,
 });
 
-const fechaInicio = '2024-06-20';
+const fechaInicio = '2025-06-20T00:00:00.000Z'; // ISO format
 
 (async () => {
   try {
@@ -17,13 +17,12 @@ const fechaInicio = '2024-06-20';
     console.log('✅ Conectado correctamente');
 
     const res = await client.query(`
-      SELECT * FROM hotel_hotelelisa.tbl_config 
-      WHERE "created_at" >= $1
-      ORDER BY "id" DESC
-      LIMIT 100
+      SELECT COUNT(*) AS total
+      FROM hotel_hotelelisa.tbl_config
+      WHERE created_at >= $1
     `, [fechaInicio]);
 
-    console.log('🔎 Resultados:', res.rows);
+    console.log(`🔢 Total de registros desde ${fechaInicio}: ${res.rows[0].total}`);
 
     await client.end();
     console.log('🚪 Conexión cerrada');
