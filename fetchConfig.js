@@ -11,7 +11,7 @@ const client = new Client({
   connectionTimeoutMillis: 5000,
 });
 
-const fechaInicio = '2025-05-20 11:36:39';
+const fechaInicio = '2025-05-20 00:00:00';
 
 (async () => {
   try {
@@ -19,20 +19,19 @@ const fechaInicio = '2025-05-20 11:36:39';
     console.log('✅ Conectado correctamente');
 
     const res = await client.query(`
-      SELECT COUNT(*) AS total
+      SELECT * 
       FROM hotel_hotelelisa.tbl_config
       WHERE created_at >= $1
+      ORDER BY id DESC
+      LIMIT 100
     `, [fechaInicio]);
 
-    const result = {
-      fecha_consulta: new Date().toISOString(),
-      fecha_inicio: fechaInicio,
-      total: parseInt(res.rows[0].total, 10),
-    };
+    const registros = res.rows;
+    console.log(`📊 Total de registros encontrados: ${registros.length}`);
 
     const outputPath = path.join(__dirname, 'resultado.json');
-    fs.writeFileSync(outputPath, JSON.stringify(result, null, 2));
-    console.log(`📝 Resultado guardado en: ${outputPath}`);
+    fs.writeFileSync(outputPath, JSON.stringify(registros, null, 2));
+    console.log(`📝 Registros guardados en: ${outputPath}`);
 
     await client.end();
     console.log('🚪 Conexión cerrada');
