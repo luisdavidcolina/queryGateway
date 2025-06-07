@@ -1,0 +1,1134 @@
+[
+  {
+    "Action": "Create",
+    "Res_DateCreated": "20250603 T-14:30:00",
+    "Booking_Code": "OTA-2212717941-18",
+    "Global_Name": "NELSON",
+    "Global_Surname": "ESPINAL",
+    "Global_email": "no@email.com",
+    "nuevo_email": "nelson.espinal@autogenerado.com",
+    "Global_Country": "CR",
+    "ROOM_TYPES": {
+      "ROOM_TYPE": {
+        "Type_Code": "HMAT",
+        "Type_Description": "Habitación Matrimonial",
+        "Room_Code": "",
+        "Status": "Confirmed",
+        "Arrival": "2025-06-24",
+        "Departure": "2025-06-26",
+        "Average_Rate": 137.31942168,
+        "Plan_Code": 8335,
+        "DAILY_RATE": {
+          "Rate": [
+            {
+              "Adult_Rate": "137.31942168",
+              "Child_Rate": "0",
+              "Date_Rate": "20250624"
+            },
+            {
+              "Adult_Rate": "137.31942168",
+              "Child_Rate": "0",
+              "Date_Rate": "20250625"
+            }
+          ]
+        },
+        "Discount": 0,
+        "Special_Rate": 1,
+        "Master": 0,
+        "Adults": 1,
+        "Children": 0,
+        "Infants": 0,
+        "Name": "NELSON",
+        "Surname": "ESPINAL",
+        "ID": "",
+        "email": "no@email.com",
+        "Country": "Costa Rica",
+        "State": "",
+        "Birthday": "",
+        "PCode": "",
+        "Srp_Code": "",
+        "Obs1": "Mode: EXPEDIA_COLLECT. Expedia collects payment from traveler: Hotel charges Expedia Virtual Card..",
+        "Loyalty": "",
+        "Loyalty_Program": "",
+        "Address": "N/A",
+        "Telephone1": "NA",
+        "Telephone2": "",
+        "ADD_ONS": ""
+      }
+    }
+  },
+  {
+    "Action": "Create",
+    "Res_DateCreated": "20250603 T-01:34:00",
+    "Booking_Code": "OTA-2212337742-27",
+    "Global_Name": "SUSAN",
+    "Global_Surname": "SHADOFF",
+    "Global_email": "no@email.com",
+    "nuevo_email": "susan.shadoff@autogenerado.com",
+    "Global_Country": "CR",
+    "ROOM_TYPES": {
+      "ROOM_TYPE": {
+        "Type_Code": "HMAT",
+        "Type_Description": "Habitación Matrimonial",
+        "Room_Code": "",
+        "Status": "Confirmed",
+        "Arrival": "2025-09-10",
+        "Departure": "2025-09-15",
+        "Average_Rate": 136.824772,
+        "Plan_Code": 8335,
+        "DAILY_RATE": {
+          "Rate": [
+            {
+              "Adult_Rate": "136.824772",
+              "Child_Rate": "0",
+              "Date_Rate": "20250910"
+            },
+            {
+              "Adult_Rate": "136.824772",
+              "Child_Rate": "0",
+              "Date_Rate": "20250911"
+            },
+            {
+              "Adult_Rate": "136.824772",
+              "Child_Rate": "0",
+              "Date_Rate": "20250912"
+            },
+            {
+              "Adult_Rate": "136.824772",
+              "Child_Rate": "0",
+              "Date_Rate": "20250913"
+            },
+            {
+              "Adult_Rate": "136.824772",
+              "Child_Rate": "0",
+              "Date_Rate": "20250914"
+            }
+          ]
+        },
+        "Discount": 0,
+        "Special_Rate": 1,
+        "Master": 0,
+        "Adults": 1,
+        "Children": 0,
+        "Infants": 0,
+        "Name": "SUSAN",
+        "Surname": "SHADOFF",
+        "ID": "",
+        "email": "no@email.com",
+        "Country": "Costa Rica",
+        "State": "",
+        "Birthday": "",
+        "PCode": "",
+        "Srp_Code": "",
+        "Obs1": "Mode: EXPEDIA_COLLECT. Expedia collects payment from traveler: Hotel charges Expedia Virtual Card..",
+        "Loyalty": "",
+        "Loyalty_Program": "",
+        "Address": "N/A",
+        "Telephone1": "NA",
+        "Telephone2": "",
+        "ADD_ONS": ""
+      }
+    }
+  },
+  {
+    "Action": "Cancelled",
+    "Res_DateCreated": "20250602 T-13:10:00",
+    "Booking_Code": "OTA-2211830279-14",
+    "Global_Name": "ALEX",
+    "Global_Surname": "MICHAEL",
+    "Global_email": "no@email.com",
+    "nuevo_email": "alex.michael@autogenerado.com",
+    "Global_Country": "CR",
+    "ROOM_TYPES": {
+      "ROOM_TYPE": {
+        "Type_Code": "HMAT",
+        "Type_Description": "Habitación Matrimonial",
+        "Room_Code": "",
+        "Status": "Cancelled",
+        "Arrival": "2025-06-06",
+        "Departure": "2025-06-09",
+        "Average_Rate": 0,
+        "Plan_Code": 8335,
+        "DAILY_RATE": {
+          "Rate": [
+            {
+              "Adult_Rate": "0",
+              "Child_Rate": "0",
+              "Date_Rate": "20250606"
+            },
+            {
+              "Adult_Rate": "0",
+              "Child_Rate": "0",
+              "Date_Rate": "20250607"
+            },
+            {
+              "Adult_Rate": "0",
+              "Child_Rate": "0",
+              "Date_Rate": "20250608"
+            }
+          ]
+        },
+        "Discount": 0,
+        "Special_Rate": 1,
+        "Master": 0,
+        "Adults": 2,
+        "Children": 0,
+        "Infants": 0,
+        "Name": "ALEX",
+        "Surname": "MICHAEL",
+        "ID": "",
+        "email": "no@email.com",
+        "Country": "Costa Rica",
+        "State": "",
+        "Birthday": "",
+        "PCode": "",
+        "Srp_Code": "",
+        "Obs1": "Mode: EXPEDIA_COLLECT. Expedia collects payment from traveler: Hotel charges Expedia Virtual Card..",
+        "Loyalty": "",
+        "Loyalty_Program": "",
+        "Address": "N/A",
+        "Telephone1": "NA",
+        "Telephone2": "",
+        "ADD_ONS": ""
+      }
+    }
+  },
+  {
+    "Action": "Create",
+    "Res_DateCreated": "20250602 T-18:27:00",
+    "Booking_Code": "OTA-2212059506-45",
+    "Global_Name": "JUNFENG",
+    "Global_Surname": "LI",
+    "Global_email": "no@email.com",
+    "nuevo_email": "junfeng.li@autogenerado.com",
+    "Global_Country": "CR",
+    "ROOM_TYPES": {
+      "ROOM_TYPE": {
+        "Type_Code": "HMAT",
+        "Type_Description": "Habitación Matrimonial",
+        "Room_Code": "",
+        "Status": "Confirmed",
+        "Arrival": "2025-06-03",
+        "Departure": "2025-06-05",
+        "Average_Rate": 136.824772,
+        "Plan_Code": 8335,
+        "DAILY_RATE": {
+          "Rate": [
+            {
+              "Adult_Rate": "136.824772",
+              "Child_Rate": "0",
+              "Date_Rate": "20250603"
+            },
+            {
+              "Adult_Rate": "136.824772",
+              "Child_Rate": "0",
+              "Date_Rate": "20250604"
+            }
+          ]
+        },
+        "Discount": 0,
+        "Special_Rate": 1,
+        "Master": 0,
+        "Adults": 1,
+        "Children": 0,
+        "Infants": 0,
+        "Name": "JUNFENG",
+        "Surname": "LI",
+        "ID": "",
+        "email": "no@email.com",
+        "Country": "Costa Rica",
+        "State": "",
+        "Birthday": "",
+        "PCode": "",
+        "Srp_Code": "",
+        "Obs1": "Mode: EXPEDIA_COLLECT. Expedia collects payment from traveler: Hotel charges Expedia Virtual Card..",
+        "Loyalty": "",
+        "Loyalty_Program": "",
+        "Address": "N/A",
+        "Telephone1": "NA",
+        "Telephone2": "",
+        "ADD_ONS": ""
+      }
+    }
+  },
+  {
+    "Action": "Create",
+    "Res_DateCreated": "20250602 T-18:27:00",
+    "Booking_Code": "OTA-2212059502-46",
+    "Global_Name": "SHUANGJIAO",
+    "Global_Surname": "XIE",
+    "Global_email": "no@email.com",
+    "nuevo_email": "shuangjiao.xie@autogenerado.com",
+    "Global_Country": "CR",
+    "ROOM_TYPES": {
+      "ROOM_TYPE": {
+        "Type_Code": "HMAT",
+        "Type_Description": "Habitación Matrimonial",
+        "Room_Code": "",
+        "Status": "Confirmed",
+        "Arrival": "2025-06-03",
+        "Departure": "2025-06-05",
+        "Average_Rate": 136.824772,
+        "Plan_Code": 8335,
+        "DAILY_RATE": {
+          "Rate": [
+            {
+              "Adult_Rate": "136.824772",
+              "Child_Rate": "0",
+              "Date_Rate": "20250603"
+            },
+            {
+              "Adult_Rate": "136.824772",
+              "Child_Rate": "0",
+              "Date_Rate": "20250604"
+            }
+          ]
+        },
+        "Discount": 0,
+        "Special_Rate": 1,
+        "Master": 0,
+        "Adults": 1,
+        "Children": 0,
+        "Infants": 0,
+        "Name": "SHUANGJIAO",
+        "Surname": "XIE",
+        "ID": "",
+        "email": "no@email.com",
+        "Country": "Costa Rica",
+        "State": "",
+        "Birthday": "",
+        "PCode": "",
+        "Srp_Code": "",
+        "Obs1": "Mode: EXPEDIA_COLLECT. Expedia collects payment from traveler: Hotel charges Expedia Virtual Card..",
+        "Loyalty": "",
+        "Loyalty_Program": "",
+        "Address": "N/A",
+        "Telephone1": "NA",
+        "Telephone2": "",
+        "ADD_ONS": ""
+      }
+    }
+  },
+  {
+    "Action": "Create",
+    "Res_DateCreated": "20250602 T-13:10:00",
+    "Booking_Code": "OTA-2211830279-14",
+    "Global_Name": "ALEX",
+    "Global_Surname": "MICHAEL",
+    "Global_email": "no@email.com",
+    "nuevo_email": "alex.michael@autogenerado.com",
+    "Global_Country": "CR",
+    "ROOM_TYPES": {
+      "ROOM_TYPE": {
+        "Type_Code": "HMAT",
+        "Type_Description": "Habitación Matrimonial",
+        "Room_Code": "",
+        "Status": "Confirmed",
+        "Arrival": "2025-06-06",
+        "Departure": "2025-06-09",
+        "Average_Rate": 205.219112,
+        "Plan_Code": 8335,
+        "DAILY_RATE": {
+          "Rate": [
+            {
+              "Adult_Rate": "205.219112",
+              "Child_Rate": "0",
+              "Date_Rate": "20250606"
+            },
+            {
+              "Adult_Rate": "205.219112",
+              "Child_Rate": "0",
+              "Date_Rate": "20250607"
+            },
+            {
+              "Adult_Rate": "205.219112",
+              "Child_Rate": "0",
+              "Date_Rate": "20250608"
+            }
+          ]
+        },
+        "Discount": 0,
+        "Special_Rate": 1,
+        "Master": 0,
+        "Adults": 2,
+        "Children": 0,
+        "Infants": 0,
+        "Name": "ALEX",
+        "Surname": "MICHAEL",
+        "ID": "",
+        "email": "no@email.com",
+        "Country": "Costa Rica",
+        "State": "",
+        "Birthday": "",
+        "PCode": "",
+        "Srp_Code": "",
+        "Obs1": "Mode: EXPEDIA_COLLECT. Expedia collects payment from traveler: Hotel charges Expedia Virtual Card..",
+        "Loyalty": "",
+        "Loyalty_Program": "",
+        "Address": "N/A",
+        "Telephone1": "NA",
+        "Telephone2": "",
+        "ADD_ONS": ""
+      }
+    }
+  },
+  {
+    "Action": "Create",
+    "Res_DateCreated": "20250601 T-12:15:00",
+    "Booking_Code": "OTA-2211083783-21",
+    "Global_Name": "EMMA",
+    "Global_Surname": "BIRRELL",
+    "Global_email": "no@email.com",
+    "nuevo_email": "emma.birrell@autogenerado.com",
+    "Global_Country": "CR",
+    "ROOM_TYPES": {
+      "ROOM_TYPE": {
+        "Type_Code": "HMAT",
+        "Type_Description": "Habitación Matrimonial",
+        "Room_Code": "",
+        "Status": "Confirmed",
+        "Arrival": "2025-08-31",
+        "Departure": "2025-09-03",
+        "Average_Rate": 228.73042764,
+        "Plan_Code": 7576,
+        "DAILY_RATE": {
+          "Rate": [
+            {
+              "Adult_Rate": "228.73042764",
+              "Child_Rate": "0",
+              "Date_Rate": "20250831"
+            },
+            {
+              "Adult_Rate": "228.73042764",
+              "Child_Rate": "0",
+              "Date_Rate": "20250901"
+            },
+            {
+              "Adult_Rate": "228.73042764",
+              "Child_Rate": "0",
+              "Date_Rate": "20250902"
+            }
+          ]
+        },
+        "Discount": 0,
+        "Special_Rate": 1,
+        "Master": 0,
+        "Adults": 2,
+        "Children": 0,
+        "Infants": 0,
+        "Name": "EMMA",
+        "Surname": "BIRRELL",
+        "ID": "",
+        "email": "no@email.com",
+        "Country": "Costa Rica",
+        "State": "",
+        "Birthday": "",
+        "PCode": "",
+        "Srp_Code": "",
+        "Obs1": "Mode: EXPEDIA_COLLECT. Expedia collects payment from traveler: Hotel charges Expedia Virtual Card..",
+        "Loyalty": "",
+        "Loyalty_Program": "",
+        "Address": "N/A",
+        "Telephone1": "NA",
+        "Telephone2": "",
+        "ADD_ONS": ""
+      }
+    }
+  },
+  {
+    "Action": "Create",
+    "Res_DateCreated": "20250531 T-15:38:00",
+    "Booking_Code": "OTA-2210578862-24",
+    "Global_Name": "ANDREW",
+    "Global_Surname": "DALE",
+    "Global_email": "no@email.com",
+    "nuevo_email": "andrew.dale@autogenerado.com",
+    "Global_Country": "CR",
+    "ROOM_TYPES": {
+      "ROOM_TYPE": {
+        "Type_Code": "HMAT",
+        "Type_Description": "Habitación Matrimonial",
+        "Room_Code": "",
+        "Status": "Confirmed",
+        "Arrival": "2025-07-27",
+        "Departure": "2025-07-29",
+        "Average_Rate": 295.04007,
+        "Plan_Code": 7576,
+        "DAILY_RATE": {
+          "Rate": [
+            {
+              "Adult_Rate": "295.04007",
+              "Child_Rate": "0",
+              "Date_Rate": "20250727"
+            },
+            {
+              "Adult_Rate": "295.04007",
+              "Child_Rate": "0",
+              "Date_Rate": "20250728"
+            }
+          ]
+        },
+        "Discount": 0,
+        "Special_Rate": 1,
+        "Master": 0,
+        "Adults": 2,
+        "Children": 0,
+        "Infants": 0,
+        "Name": "ANDREW",
+        "Surname": "DALE",
+        "ID": "",
+        "email": "no@email.com",
+        "Country": "Costa Rica",
+        "State": "",
+        "Birthday": "",
+        "PCode": "",
+        "Srp_Code": "",
+        "Obs1": "Mode: HOTEL_COLLECT. Hotel collects payment from the traveler.",
+        "Loyalty": "",
+        "Loyalty_Program": "",
+        "Address": "N/A",
+        "Telephone1": "NA",
+        "Telephone2": "",
+        "ADD_ONS": ""
+      }
+    }
+  },
+  {
+    "Action": "Create",
+    "Res_DateCreated": "20250531 T-12:45:00",
+    "Booking_Code": "OTA-2210495996-12",
+    "Global_Name": "NASTASSJA",
+    "Global_Surname": "BAAK",
+    "Global_email": "no@email.com",
+    "nuevo_email": "nastassja.baak@autogenerado.com",
+    "Global_Country": "CR",
+    "ROOM_TYPES": {
+      "ROOM_TYPE": {
+        "Type_Code": "HMAT",
+        "Type_Description": "Habitación Matrimonial",
+        "Room_Code": "",
+        "Status": "Confirmed",
+        "Arrival": "2025-09-26",
+        "Departure": "2025-09-28",
+        "Average_Rate": 207.11095792,
+        "Plan_Code": 8335,
+        "DAILY_RATE": {
+          "Rate": [
+            {
+              "Adult_Rate": "207.11095792",
+              "Child_Rate": "0",
+              "Date_Rate": "20250926"
+            },
+            {
+              "Adult_Rate": "207.11095792",
+              "Child_Rate": "0",
+              "Date_Rate": "20250927"
+            }
+          ]
+        },
+        "Discount": 0,
+        "Special_Rate": 1,
+        "Master": 0,
+        "Adults": 2,
+        "Children": 0,
+        "Infants": 0,
+        "Name": "NASTASSJA",
+        "Surname": "BAAK",
+        "ID": "",
+        "email": "no@email.com",
+        "Country": "Costa Rica",
+        "State": "",
+        "Birthday": "",
+        "PCode": "",
+        "Srp_Code": "",
+        "Obs1": "Mode: EXPEDIA_COLLECT. Dear Sir/Madam, We are a travel agency (Riksja Travel NL) who have booked your accommodation for our client. If you have any questions regarding arrival times or any other, you can contact our customer directly on telephone number: +31+31718910323.",
+        "Loyalty": "",
+        "Loyalty_Program": "",
+        "Address": "N/A",
+        "Telephone1": "NA",
+        "Telephone2": "",
+        "ADD_ONS": ""
+      }
+    }
+  },
+  {
+    "Action": "Create",
+    "Res_DateCreated": "20250531 T-12:53:00",
+    "Booking_Code": "OTA-2210499096-12",
+    "Global_Name": "NASTASSJA",
+    "Global_Surname": "BAAK",
+    "Global_email": "no@email.com",
+    "nuevo_email": "nastassja.baak@autogenerado.com",
+    "Global_Country": "CR",
+    "ROOM_TYPES": {
+      "ROOM_TYPE": {
+        "Type_Code": "VIP",
+        "Type_Description": "Habitación VIP",
+        "Room_Code": "",
+        "Status": "Confirmed",
+        "Arrival": "2025-09-29",
+        "Departure": "2025-09-30",
+        "Average_Rate": 276.1720754,
+        "Plan_Code": 8335,
+        "DAILY_RATE": {
+          "Rate": {
+            "Adult_Rate": "276.1720754",
+            "Child_Rate": "0",
+            "Date_Rate": "20250929"
+          }
+        },
+        "Discount": 0,
+        "Special_Rate": 1,
+        "Master": 0,
+        "Adults": 2,
+        "Children": 0,
+        "Infants": 0,
+        "Name": "NASTASSJA",
+        "Surname": "BAAK",
+        "ID": "",
+        "email": "no@email.com",
+        "Country": "Costa Rica",
+        "State": "",
+        "Birthday": "",
+        "PCode": "",
+        "Srp_Code": "",
+        "Obs1": "Mode: EXPEDIA_COLLECT. Dear Sir/Madam, We are a travel agency (Riksja Travel NL) who have booked your accommodation for our client. If you have any questions regarding arrival times or any other, you can contact our customer directly on telephone number: +31+31718910323.",
+        "Loyalty": "",
+        "Loyalty_Program": "",
+        "Address": "N/A",
+        "Telephone1": "NA",
+        "Telephone2": "",
+        "ADD_ONS": ""
+      }
+    }
+  },
+  {
+    "Action": "Create",
+    "Res_DateCreated": "20250530 T-00:53:00",
+    "Booking_Code": "OTA-2209503491-48",
+    "Global_Name": "VASILY",
+    "Global_Surname": "PLEKHANOV",
+    "Global_email": "no@email.com",
+    "nuevo_email": "vasily.plekhanov@autogenerado.com",
+    "Global_Country": "CR",
+    "ROOM_TYPES": {
+      "ROOM_TYPE": {
+        "Type_Code": "HMAT",
+        "Type_Description": "Habitación Matrimonial",
+        "Room_Code": "",
+        "Status": "Confirmed",
+        "Arrival": "2025-06-26",
+        "Departure": "2025-06-28",
+        "Average_Rate": 295.040232,
+        "Plan_Code": 7576,
+        "DAILY_RATE": {
+          "Rate": [
+            {
+              "Adult_Rate": "295.040232",
+              "Child_Rate": "0",
+              "Date_Rate": "20250626"
+            },
+            {
+              "Adult_Rate": "295.040232",
+              "Child_Rate": "0",
+              "Date_Rate": "20250627"
+            }
+          ]
+        },
+        "Discount": 0,
+        "Special_Rate": 1,
+        "Master": 0,
+        "Adults": 2,
+        "Children": 0,
+        "Infants": 0,
+        "Name": "VASILY",
+        "Surname": "PLEKHANOV",
+        "ID": "",
+        "email": "no@email.com",
+        "Country": "Costa Rica",
+        "State": "",
+        "Birthday": "",
+        "PCode": "",
+        "Srp_Code": "",
+        "Obs1": "Mode: HOTEL_COLLECT. Hotel collects payment from the traveler.",
+        "Loyalty": "",
+        "Loyalty_Program": "",
+        "Address": "N/A",
+        "Telephone1": "NA",
+        "Telephone2": "",
+        "ADD_ONS": ""
+      }
+    }
+  },
+  {
+    "Action": "Create",
+    "Res_DateCreated": "20250528 T-15:47:00",
+    "Booking_Code": "OTA-2208412793-55",
+    "Global_Name": "DI",
+    "Global_Surname": "ZHANG",
+    "Global_email": "no@email.com",
+    "nuevo_email": "di.zhang@autogenerado.com",
+    "Global_Country": "CR",
+    "ROOM_TYPES": {
+      "ROOM_TYPE": {
+        "Type_Code": "HMAT",
+        "Type_Description": "Habitación Matrimonial",
+        "Room_Code": "",
+        "Status": "Confirmed",
+        "Arrival": "2025-05-28",
+        "Departure": "2025-05-30",
+        "Average_Rate": 138.7536328,
+        "Plan_Code": 8335,
+        "DAILY_RATE": {
+          "Rate": [
+            {
+              "Adult_Rate": "138.7536328",
+              "Child_Rate": "0",
+              "Date_Rate": "20250528"
+            },
+            {
+              "Adult_Rate": "138.7536328",
+              "Child_Rate": "0",
+              "Date_Rate": "20250529"
+            }
+          ]
+        },
+        "Discount": 0,
+        "Special_Rate": 1,
+        "Master": 0,
+        "Adults": 1,
+        "Children": 0,
+        "Infants": 0,
+        "Name": "DI",
+        "Surname": "ZHANG",
+        "ID": "",
+        "email": "no@email.com",
+        "Country": "Costa Rica",
+        "State": "",
+        "Birthday": "",
+        "PCode": "",
+        "Srp_Code": "",
+        "Obs1": "Mode: EXPEDIA_COLLECT. Expedia collects payment from traveler: Hotel charges Expedia Virtual Card..",
+        "Loyalty": "",
+        "Loyalty_Program": "",
+        "Address": "N/A",
+        "Telephone1": "NA",
+        "Telephone2": "",
+        "ADD_ONS": ""
+      }
+    }
+  },
+  {
+    "Action": "Cancelled",
+    "Res_DateCreated": "20250524 T-19:43:00",
+    "Booking_Code": "OTA-2205656459-55",
+    "Global_Name": "BRITTANY",
+    "Global_Surname": "DELLASANTA",
+    "Global_email": "no@email.com",
+    "nuevo_email": "brittany.dellasanta@autogenerado.com",
+    "Global_Country": "CR",
+    "ROOM_TYPES": {
+      "ROOM_TYPE": {
+        "Type_Code": "HMAT",
+        "Type_Description": "Habitación Matrimonial",
+        "Room_Code": "",
+        "Status": "Cancelled",
+        "Arrival": "2025-07-10",
+        "Departure": "2025-07-14",
+        "Average_Rate": 0,
+        "Plan_Code": 8335,
+        "DAILY_RATE": {
+          "Rate": [
+            {
+              "Adult_Rate": "0",
+              "Child_Rate": "0",
+              "Date_Rate": "20250710"
+            },
+            {
+              "Adult_Rate": "0",
+              "Child_Rate": "0",
+              "Date_Rate": "20250711"
+            },
+            {
+              "Adult_Rate": "0",
+              "Child_Rate": "0",
+              "Date_Rate": "20250712"
+            },
+            {
+              "Adult_Rate": "0",
+              "Child_Rate": "0",
+              "Date_Rate": "20250713"
+            }
+          ]
+        },
+        "Discount": 0,
+        "Special_Rate": 1,
+        "Master": 0,
+        "Adults": 1,
+        "Children": 0,
+        "Infants": 0,
+        "Name": "BRITTANY",
+        "Surname": "DELLASANTA",
+        "ID": "",
+        "email": "no@email.com",
+        "Country": "Costa Rica",
+        "State": "",
+        "Birthday": "",
+        "PCode": "",
+        "Srp_Code": "",
+        "Obs1": "Mode: EXPEDIA_COLLECT. Expedia collects payment from traveler: Hotel charges Expedia Virtual Card..",
+        "Loyalty": "",
+        "Loyalty_Program": "",
+        "Address": "N/A",
+        "Telephone1": "NA",
+        "Telephone2": "",
+        "ADD_ONS": ""
+      }
+    }
+  },
+  {
+    "Action": "Create",
+    "Res_DateCreated": "20250524 T-19:43:00",
+    "Booking_Code": "OTA-2205656459-55",
+    "Global_Name": "BRITTANY",
+    "Global_Surname": "DELLASANTA",
+    "Global_email": "no@email.com",
+    "nuevo_email": "brittany.dellasanta@autogenerado.com",
+    "Global_Country": "CR",
+    "ROOM_TYPES": {
+      "ROOM_TYPE": {
+        "Type_Code": "HMAT",
+        "Type_Description": "Habitación Matrimonial",
+        "Room_Code": "",
+        "Status": "Confirmed",
+        "Arrival": "2025-07-10",
+        "Departure": "2025-07-14",
+        "Average_Rate": 138.7490836,
+        "Plan_Code": 8335,
+        "DAILY_RATE": {
+          "Rate": [
+            {
+              "Adult_Rate": "138.7490836",
+              "Child_Rate": "0",
+              "Date_Rate": "20250710"
+            },
+            {
+              "Adult_Rate": "138.7490836",
+              "Child_Rate": "0",
+              "Date_Rate": "20250711"
+            },
+            {
+              "Adult_Rate": "138.7490836",
+              "Child_Rate": "0",
+              "Date_Rate": "20250712"
+            },
+            {
+              "Adult_Rate": "138.7490836",
+              "Child_Rate": "0",
+              "Date_Rate": "20250713"
+            }
+          ]
+        },
+        "Discount": 0,
+        "Special_Rate": 1,
+        "Master": 0,
+        "Adults": 1,
+        "Children": 0,
+        "Infants": 0,
+        "Name": "BRITTANY",
+        "Surname": "DELLASANTA",
+        "ID": "",
+        "email": "no@email.com",
+        "Country": "Costa Rica",
+        "State": "",
+        "Birthday": "",
+        "PCode": "",
+        "Srp_Code": "",
+        "Obs1": "Mode: EXPEDIA_COLLECT. Expedia collects payment from traveler: Hotel charges Expedia Virtual Card..",
+        "Loyalty": "",
+        "Loyalty_Program": "",
+        "Address": "N/A",
+        "Telephone1": "NA",
+        "Telephone2": "",
+        "ADD_ONS": ""
+      }
+    }
+  },
+  {
+    "Action": "Create",
+    "Res_DateCreated": "20250524 T-17:40:00",
+    "Booking_Code": "OTA-2205592508-00",
+    "Global_Name": "DI",
+    "Global_Surname": "ZHANG",
+    "Global_email": "no@email.com",
+    "nuevo_email": "di.zhang@autogenerado.com",
+    "Global_Country": "CR",
+    "ROOM_TYPES": {
+      "ROOM_TYPE": {
+        "Type_Code": "HMAT",
+        "Type_Description": "Habitación Matrimonial",
+        "Room_Code": "",
+        "Status": "Confirmed",
+        "Arrival": "2025-05-24",
+        "Departure": "2025-05-28",
+        "Average_Rate": 138.74912151,
+        "Plan_Code": 8335,
+        "DAILY_RATE": {
+          "Rate": [
+            {
+              "Adult_Rate": "138.74912151",
+              "Child_Rate": "0",
+              "Date_Rate": "20250524"
+            },
+            {
+              "Adult_Rate": "138.74912151",
+              "Child_Rate": "0",
+              "Date_Rate": "20250525"
+            },
+            {
+              "Adult_Rate": "138.74912151",
+              "Child_Rate": "0",
+              "Date_Rate": "20250526"
+            },
+            {
+              "Adult_Rate": "138.74912151",
+              "Child_Rate": "0",
+              "Date_Rate": "20250527"
+            }
+          ]
+        },
+        "Discount": 0,
+        "Special_Rate": 1,
+        "Master": 0,
+        "Adults": 1,
+        "Children": 0,
+        "Infants": 0,
+        "Name": "DI",
+        "Surname": "ZHANG",
+        "ID": "",
+        "email": "no@email.com",
+        "Country": "Costa Rica",
+        "State": "",
+        "Birthday": "",
+        "PCode": "",
+        "Srp_Code": "",
+        "Obs1": "Mode: EXPEDIA_COLLECT. Expedia collects payment from traveler: Hotel charges Expedia Virtual Card..",
+        "Loyalty": "",
+        "Loyalty_Program": "",
+        "Address": "N/A",
+        "Telephone1": "NA",
+        "Telephone2": "",
+        "ADD_ONS": ""
+      }
+    }
+  },
+  {
+    "Action": "Create",
+    "Res_DateCreated": "20250522 T-14:56:00",
+    "Booking_Code": "OTA-2204048070-21",
+    "Global_Name": "MARC",
+    "Global_Surname": "PHILIPP ZENZIUS",
+    "Global_email": "no@email.com",
+    "nuevo_email": "marc.philipp.zenzius@autogenerado.com",
+    "Global_Country": "CR",
+    "ROOM_TYPES": {
+      "ROOM_TYPE": {
+        "Type_Code": "HMAT",
+        "Type_Description": "Habitación Matrimonial",
+        "Room_Code": "",
+        "Status": "Confirmed",
+        "Arrival": "2025-07-28",
+        "Departure": "2025-07-31",
+        "Average_Rate": 208.8854448,
+        "Plan_Code": 8335,
+        "DAILY_RATE": {
+          "Rate": [
+            {
+              "Adult_Rate": "208.8854448",
+              "Child_Rate": "0",
+              "Date_Rate": "20250728"
+            },
+            {
+              "Adult_Rate": "208.8854448",
+              "Child_Rate": "0",
+              "Date_Rate": "20250729"
+            },
+            {
+              "Adult_Rate": "208.8854448",
+              "Child_Rate": "0",
+              "Date_Rate": "20250730"
+            }
+          ]
+        },
+        "Discount": 0,
+        "Special_Rate": 1,
+        "Master": 0,
+        "Adults": 2,
+        "Children": 0,
+        "Infants": 0,
+        "Name": "MARC",
+        "Surname": "PHILIPP ZENZIUS",
+        "ID": "",
+        "email": "no@email.com",
+        "Country": "Costa Rica",
+        "State": "",
+        "Birthday": "",
+        "PCode": "",
+        "Srp_Code": "",
+        "Obs1": "Mode: EXPEDIA_COLLECT. Expedia collects payment from traveler: Hotel charges Expedia Virtual Card..",
+        "Loyalty": "",
+        "Loyalty_Program": "",
+        "Address": "N/A",
+        "Telephone1": "NA",
+        "Telephone2": "",
+        "ADD_ONS": ""
+      }
+    }
+  },
+  {
+    "Action": "Create",
+    "Res_DateCreated": "20250521 T-20:45:00",
+    "Booking_Code": "OTA-2203492706-38",
+    "Global_Name": "MARIE",
+    "Global_Surname": "HUIJSER",
+    "Global_email": "no@email.com",
+    "nuevo_email": "marie.huijser@autogenerado.com",
+    "Global_Country": "CR",
+    "ROOM_TYPES": {
+      "ROOM_TYPE": {
+        "Type_Code": "HMAT",
+        "Type_Description": "Habitación Matrimonial",
+        "Room_Code": "",
+        "Status": "Confirmed",
+        "Arrival": "2025-09-11",
+        "Departure": "2025-09-16",
+        "Average_Rate": 139.73220363,
+        "Plan_Code": 8335,
+        "DAILY_RATE": {
+          "Rate": [
+            {
+              "Adult_Rate": "139.73220363",
+              "Child_Rate": "0",
+              "Date_Rate": "20250911"
+            },
+            {
+              "Adult_Rate": "139.73220363",
+              "Child_Rate": "0",
+              "Date_Rate": "20250912"
+            },
+            {
+              "Adult_Rate": "139.73220363",
+              "Child_Rate": "0",
+              "Date_Rate": "20250913"
+            },
+            {
+              "Adult_Rate": "139.73220363",
+              "Child_Rate": "0",
+              "Date_Rate": "20250914"
+            },
+            {
+              "Adult_Rate": "139.73220363",
+              "Child_Rate": "0",
+              "Date_Rate": "20250915"
+            }
+          ]
+        },
+        "Discount": 0,
+        "Special_Rate": 1,
+        "Master": 0,
+        "Adults": 1,
+        "Children": 0,
+        "Infants": 0,
+        "Name": "MARIE",
+        "Surname": "HUIJSER",
+        "ID": "",
+        "email": "no@email.com",
+        "Country": "Costa Rica",
+        "State": "",
+        "Birthday": "",
+        "PCode": "",
+        "Srp_Code": "",
+        "Obs1": "Mode: EXPEDIA_COLLECT. Expedia collects payment from traveler: Hotel charges Expedia Virtual Card..",
+        "Loyalty": "",
+        "Loyalty_Program": "",
+        "Address": "N/A",
+        "Telephone1": "NA",
+        "Telephone2": "",
+        "ADD_ONS": ""
+      }
+    }
+  },
+  {
+    "Action": "Create",
+    "Res_DateCreated": "20250521 T-23:19:00",
+    "Booking_Code": "OTA-2203581561-58",
+    "Global_Name": "MARIE",
+    "Global_Surname": "HUIJSER",
+    "Global_email": "no@email.com",
+    "nuevo_email": "marie.huijser@autogenerado.com",
+    "Global_Country": "CR",
+    "ROOM_TYPES": {
+      "ROOM_TYPE": {
+        "Type_Code": "DOBLE",
+        "Type_Description": "Habitación Doble",
+        "Room_Code": "",
+        "Status": "Confirmed",
+        "Arrival": "2025-09-11",
+        "Departure": "2025-09-16",
+        "Average_Rate": 155.2496868,
+        "Plan_Code": 7576,
+        "DAILY_RATE": {
+          "Rate": [
+            {
+              "Adult_Rate": "155.2496868",
+              "Child_Rate": "0",
+              "Date_Rate": "20250911"
+            },
+            {
+              "Adult_Rate": "155.2496868",
+              "Child_Rate": "0",
+              "Date_Rate": "20250912"
+            },
+            {
+              "Adult_Rate": "155.2496868",
+              "Child_Rate": "0",
+              "Date_Rate": "20250913"
+            },
+            {
+              "Adult_Rate": "155.2496868",
+              "Child_Rate": "0",
+              "Date_Rate": "20250914"
+            },
+            {
+              "Adult_Rate": "155.2496868",
+              "Child_Rate": "0",
+              "Date_Rate": "20250915"
+            }
+          ]
+        },
+        "Discount": 0,
+        "Special_Rate": 1,
+        "Master": 0,
+        "Adults": 1,
+        "Children": 0,
+        "Infants": 0,
+        "Name": "MARIE",
+        "Surname": "HUIJSER",
+        "ID": "",
+        "email": "no@email.com",
+        "Country": "Costa Rica",
+        "State": "",
+        "Birthday": "",
+        "PCode": "",
+        "Srp_Code": "",
+        "Obs1": "Mode: EXPEDIA_COLLECT. Expedia collects payment from traveler: Hotel charges Expedia Virtual Card..",
+        "Loyalty": "",
+        "Loyalty_Program": "",
+        "Address": "N/A",
+        "Telephone1": "NA",
+        "Telephone2": "",
+        "ADD_ONS": ""
+      }
+    }
+  }
+]
