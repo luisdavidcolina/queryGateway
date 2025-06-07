@@ -20,7 +20,7 @@ const fechaInicio = '2025-01-20 00:00:00';
 
     const res = await client.query(`
       SELECT * 
-      FROM hotel_hotelvalverde.tbl_config
+      FROM hotel_hotelvolcanolodge.tbl_config
       WHERE created_at >= $1
       ORDER BY id DESC
       LIMIT 100
