@@ -1,4 +1,6 @@
 const { Client } = require('pg');
+const fs = require('fs');
+const path = require('path');
 
 const client = new Client({
   host: '127.0.0.1',
@@ -9,7 +11,7 @@ const client = new Client({
   connectionTimeoutMillis: 5000,
 });
 
-const fechaInicio = '2025-05-20 11:36:39'; // ISO format
+const fechaInicio = '2025-05-20 11:36:39';
 
 (async () => {
   try {
@@ -22,7 +24,15 @@ const fechaInicio = '2025-05-20 11:36:39'; // ISO format
       WHERE created_at >= $1
     `, [fechaInicio]);
 
-    console.log(`🔢 Total de registros desde ${fechaInicio}: ${res.rows[0].total}`);
+    const result = {
+      fecha_consulta: new Date().toISOString(),
+      fecha_inicio: fechaInicio,
+      total: parseInt(res.rows[0].total, 10),
+    };
+
+    const outputPath = path.join(__dirname, 'resultado.json');
+    fs.writeFileSync(outputPath, JSON.stringify(result, null, 2));
+    console.log(`📝 Resultado guardado en: ${outputPath}`);
 
     await client.end();
     console.log('🚪 Conexión cerrada');
