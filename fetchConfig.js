@@ -9,7 +9,7 @@ const client = new Client({
   connectionTimeoutMillis: 5000,
 });
 
-const fechaInicio = '2025-06-20T00:00:00.000Z'; // ISO format
+const fechaInicio = '2025-05-20 11:36:39'; // ISO format
 
 (async () => {
   try {
