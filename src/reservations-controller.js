@@ -62,7 +62,11 @@ const crearReservaciones = async (data, schema) => {
             const detallesResult = await pool.query(detallesQuery, [grupo.id]);
             for (const detalle of detallesResult.rows) {
               try {
-                await pool.query(`DELETE FROM ${schema}.tbl_reservas_detalle WHERE id = $1`, [detalle.id]);
+                await pool.query(`
+  UPDATE ${schema}.tbl_reservas_detalle
+  SET deleted_at = CURRENT_TIMESTAMP
+  WHERE id = $1
+`, [detalle.id]);
               } catch (error) {
                 console.error("Error al eliminar detalle de reserva:", error.message);
               }
@@ -70,7 +74,11 @@ const crearReservaciones = async (data, schema) => {
 
             // Eliminar grupo
             try {
-              await pool.query(`DELETE FROM ${schema}.tbl_reservas_grupo WHERE id = $1`, [grupo.id]);
+              await pool.query(`
+  UPDATE ${schema}.tbl_reservas_grupo
+  SET deleted_at = CURRENT_TIMESTAMP
+  WHERE id = $1
+`, [grupo.id]);
             } catch (error) {
               console.error("Error al eliminar grupo de reserva:", error.message);
             }
@@ -143,8 +151,8 @@ const crearReservaciones = async (data, schema) => {
         ]);
       } else {
         const insertQuery = `
-          INSERT INTO ${schema}.tbl_clientes (email, nombre, apellido, id_clientes_tipo, id_nacionalidad)
-          VALUES ($1, $2, $3, $4, $5)
+          INSERT INTO ${schema}.tbl_clientes (email, nombre, apellido, id_clientes_tipo, id_nacionalidad, created_at, updated_at)
+          VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
           RETURNING id
         `;
         clienteResult = await pool.query(insertQuery, [
@@ -214,14 +222,22 @@ const crearReservaciones = async (data, schema) => {
           const detallesResult = await pool.query(detallesQuery, [grupo.id]);
           for (const detalle of detallesResult.rows) {
             try {
-              await pool.query(`DELETE FROM ${schema}.tbl_reservas_detalle WHERE id = $1`, [detalle.id]);
+              await pool.query(`
+  UPDATE ${schema}.tbl_reservas_detalle
+  SET deleted_at = CURRENT_TIMESTAMP
+  WHERE id = $1
+`, [detalle.id]);
             } catch (error) {
               console.error("Error al eliminar detalle de reserva:", error.message);
             }
           }
 
           try {
-            await pool.query(`DELETE FROM ${schema}.tbl_reservas_grupo WHERE id = $1`, [grupo.id]);
+            await pool.query(`
+  UPDATE ${schema}.tbl_reservas_grupo
+  SET deleted_at = CURRENT_TIMESTAMP
+  WHERE id = $1
+`, [grupo.id]);
           } catch (error) {
             console.error("Error al eliminar grupo de reserva:", error.message);
           }

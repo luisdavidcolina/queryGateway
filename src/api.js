@@ -26,7 +26,6 @@ const pool = new Pool({
 
 const apiVerReservas = async (schema_id) => {
   try {
-    // Consultar la tabla tbl_config para obtener data_api
     const query = `SELECT value FROM ${schema_id}.tbl_config WHERE name = $1`;
     const result = await pool.query(query, ["data_api"]);
 
@@ -64,7 +63,6 @@ const apiVerReservas = async (schema_id) => {
     console.log(data)
     // Verificar si la respuesta no es vacía
     if (data !== "<RESULT><RESERVATIONS></RESERVATIONS></RESULT>") {
-      // Guardar los datos en tbl_config
       const configName = `reserva${Date.now()}`;
       const insertQuery = `
         INSERT INTO ${schema_id}.tbl_config (name, value, created_at, updated_at)

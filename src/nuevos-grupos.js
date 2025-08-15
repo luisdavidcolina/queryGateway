@@ -46,9 +46,9 @@ async function CreaarReservaDetalle(ROOM_TYPE, reserva, precio, cliente, id_grup
       INSERT INTO $1.tbl_reservas_detalle (
         id_reservas_grupo, id_habitacion_tipo, adultos_cantidad, ninos_cantidad,
         infantes_cantidad, precio_total, precio_neto, check_in_fecha, check_out_fecha,
-        id_reserva_detalle_estado_habitacion, numero_impuesto, numero_impuesto2, servicio
+        id_reserva_detalle_estado_habitacion, numero_impuesto, numero_impuesto2, servicio, created_at, updated_at
       )
-      VALUES ($2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+      VALUES ($2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
     `;
     await poolClient.query(insertQuery, [
       schema,
@@ -87,8 +87,8 @@ async function newGrupo(id_reserva, data, schema) {
     };
 
     const insertQuery = `
-      INSERT INTO $1.tbl_reservas_grupo (id_reservas, id_reservas_estado, check_in_fecha, check_out_fecha, huespedes_cantidad)
-      VALUES ($2, $3, $4, $5, $6)
+      INSERT INTO $1.tbl_reservas_grupo (id_reservas, id_reservas_estado, check_in_fecha, check_out_fecha, huespedes_cantidad, created_at, updated_at)
+      VALUES ($2, $3, $4, $5, $6, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
       RETURNING id
     `;
     const result = await poolClient.query(insertQuery, [schema, reserva.id_reservas, reserva.id_reservas_estado, reserva.check_in_fecha, reserva.check_out_fecha, reserva.huespedes_cantidad]);

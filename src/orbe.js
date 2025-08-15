@@ -37,8 +37,8 @@ async function saveReservaDetail(data_detail, cliente_id, data, id_reserva, Book
         huespedes_cantidad: (parseInt(data.Adults || 0) + parseInt(data.Children || 0) + parseInt(data.Infants || 0))
       };
       const insertQuery = `
-        INSERT INTO $1.tbl_reservas (id_cliente, check_in_fecha, check_out_fecha, fuente_reserva_id, huespedes_cantidad)
-        VALUES ($2, $3, $4, $5, $6)
+        INSERT INTO $1.tbl_reservas (id_cliente, check_in_fecha, check_out_fecha, fuente_reserva_id, huespedes_cantidad, created_at, updated_at)
+        VALUES ($2, $3, $4, $5, $6, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
         RETURNING id
       `;
       const reservaResult = await poolClient.query(insertQuery, [schema, reserva.id_cliente, reserva.check_in_fecha, reserva.check_out_fecha, reserva.fuente_reserva_id, reserva.huespedes_cantidad]);
@@ -115,9 +115,9 @@ async function ActualizarOrbeBloqueoAgregar(room_type, fecha_inicio, fecha_fin, 
     const insertBitacoraQuery = `
       INSERT INTO $1.tbl_bitacoras (
         user_id, reserva_id, grupo_id, habitacion_id, fecha_llegada_anterior, fecha_salida_anterior,
-        fecha_llegada_actual, fecha_salida_actual, xml, respuesta, tipo_movimiento
+        fecha_llegada_actual, fecha_salida_actual, xml, respuesta, tipo_movimiento, created_at, updated_at
       )
-      VALUES ($2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      VALUES ($2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
     `;
     await poolClient.query(insertBitacoraQuery, [
       schema,
