@@ -17,7 +17,7 @@ const cargarReservas = async (schema_ids) => {
             console.log(`Procesando schema: ${schema_id}`);
 
             // Obtener datos de la API
-            const data = await apiVerReservas(schema_id);
+            let data = await apiVerReservas(schema_id);
 
             if (!data) {
                 console.log(`No se recibieron datos para el schema ${schema_id}`);
