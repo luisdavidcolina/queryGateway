@@ -37,8 +37,8 @@ const apiVerReservas = async (schema_id) => {
     `.trim();
 
     // Realizar la solicitud HTTP POST
-    //const url = "https://capi.orbebooking.com/OAF/BOOKRET/XML/";
-    const url = "https://webhook.site/4a9f16bb-f503-4d27-9fe2-2147c36951eb"
+    const url = "https://capi.orbebooking.com/OAF/BOOKRET/XML/";
+    //const url = "https://webhook.site/4a9f16bb-f503-4d27-9fe2-2147c36951eb"
     const response = await axios.post(url, xmlRequest, {
       headers: { "Content-Type": "text/xml" },
     });
