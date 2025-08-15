@@ -26,7 +26,7 @@ const apiVerReservas = async (schema_id) => {
 
     // Parsear el valor de data_api (JSON)
     const credentials = datos.validate ? JSON.parse(datos.value) : {};
-
+    
     // Construir la solicitud XML
     const xmlRequest = `
       <ReservationsRequest>
