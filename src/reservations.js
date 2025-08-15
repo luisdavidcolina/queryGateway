@@ -25,6 +25,7 @@ const cargarReservas = async (schema_ids) => {
             }
 
             console.log(data)
+            data=data.result;
 
             // Verificar si existen reservas
             if (data.RESERVATIONS && data.RESERVATIONS.RESERVATION) {
