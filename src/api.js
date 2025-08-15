@@ -46,8 +46,9 @@ const apiVerReservas = async (schema_id) => {
     });
 
     let data = response.data.trim();
+    console.log(data)
     data= data.replaceAll(' ','')
-
+ console.log(data)
     // Verificar si la respuesta no es vacía
     if (data !== "<RESULT><RESERVATIONS></RESERVATIONS></RESULT>") {
       // Guardar los datos en tbl_config
