@@ -63,10 +63,10 @@ const crearReservaciones = async (data, schema) => {
             for (const detalle of detallesResult.rows) {
               try {
                 await pool.query(`
-  UPDATE ${schema}.tbl_reservas_detalle
-  SET deleted_at = CURRENT_TIMESTAMP
-  WHERE id = $1
-`, [detalle.id]);
+                  UPDATE ${schema}.tbl_reservas_detalle
+                  SET deleted_at = CURRENT_TIMESTAMP
+                  WHERE id = $1
+                `, [detalle.id]);
               } catch (error) {
                 console.error("Error al eliminar detalle de reserva:", error.message);
               }
@@ -75,10 +75,10 @@ const crearReservaciones = async (data, schema) => {
             // Eliminar grupo
             try {
               await pool.query(`
-  UPDATE ${schema}.tbl_reservas_grupo
-  SET deleted_at = CURRENT_TIMESTAMP
-  WHERE id = $1
-`, [grupo.id]);
+                UPDATE ${schema}.tbl_reservas_grupo
+                SET deleted_at = CURRENT_TIMESTAMP
+                WHERE id = $1
+              `, [grupo.id]);
             } catch (error) {
               console.error("Error al eliminar grupo de reserva:", error.message);
             }
@@ -139,7 +139,7 @@ const crearReservaciones = async (data, schema) => {
       if (cliente.id) {
         const updateQuery = `
           UPDATE ${schema}.tbl_clientes
-          SET nombre = $1, apellido = $2, id_clientes_tipo = $3, id_nacionalidad = $4
+          SET nombre = $1, apellido = $2, id_clientes_tipo = $3, id_nacionalidad = $4, updated_at = CURRENT_TIMESTAMP
           WHERE id = $5
         `;
         await pool.query(updateQuery, [
@@ -223,10 +223,10 @@ const crearReservaciones = async (data, schema) => {
           for (const detalle of detallesResult.rows) {
             try {
               await pool.query(`
-  UPDATE ${schema}.tbl_reservas_detalle
-  SET deleted_at = CURRENT_TIMESTAMP
-  WHERE id = $1
-`, [detalle.id]);
+                UPDATE ${schema}.tbl_reservas_detalle
+                SET deleted_at = CURRENT_TIMESTAMP
+                WHERE id = $1
+              `, [detalle.id]);
             } catch (error) {
               console.error("Error al eliminar detalle de reserva:", error.message);
             }
@@ -234,34 +234,37 @@ const crearReservaciones = async (data, schema) => {
 
           try {
             await pool.query(`
-  UPDATE ${schema}.tbl_reservas_grupo
-  SET deleted_at = CURRENT_TIMESTAMP
-  WHERE id = $1
-`, [grupo.id]);
+              UPDATE ${schema}.tbl_reservas_grupo
+              SET deleted_at = CURRENT_TIMESTAMP
+              WHERE id = $1
+            `, [grupo.id]);
           } catch (error) {
             console.error("Error al eliminar grupo de reserva:", error.message);
           }
-        }
 
-        const roomTypes = Array.isArray(data.ROOM_TYPES.ROOM_TYPE)
-          ? data.ROOM_TYPES.ROOM_TYPE
-          : [data.ROOM_TYPES.ROOM_TYPE];
-        for (const roomType of roomTypes) {
-          const habitacionQuery = `
-            SELECT tbl_habitaciones_tipo.room_type
-            FROM ${schema}.tbl_habitaciones
-            JOIN ${schema}.tbl_habitaciones_tipo
-            ON tbl_habitaciones.id_habitacion_tipo = tbl_habitaciones_tipo.id
-            WHERE tbl_habitaciones_tipo.codigo = $1
-          `;
-          const habitacionResult = await pool.query(habitacionQuery, [roomType.Type_Code]);
-          if (habitacionResult.rows.length) {
-            const room_type = habitacionResult.rows[0].room_type;
-            try {
-              await ActualizarOrbeBloqueoAgregar(room_type, grupo.check_in_fecha, grupo.check_out_fecha, schema);
-              console.log("Sincronizado con Orbe");
-            } catch (error) {
-              console.error("Imposible sincronizar con Orbe:", error.message);
+          // Sincronizar con Orbe para habitaciones canceladas dentro del bucle
+          const roomTypes = Array.isArray(data.ROOM_TYPES.ROOM_TYPE)
+            ? data.ROOM_TYPES.ROOM_TYPE
+            : [data.ROOM_TYPES.ROOM_TYPE];
+          for (const roomType of roomTypes) {
+            if (roomType.Status === "Cancelled") {
+              const habitacionQuery = `
+                SELECT tbl_habitaciones_tipo.room_type
+                FROM ${schema}.tbl_habitaciones
+                JOIN ${schema}.tbl_habitaciones_tipo
+                ON tbl_habitaciones.id_habitacion_tipo = tbl_habitaciones_tipo.id
+                WHERE tbl_habitaciones_tipo.codigo = $1
+              `;
+              const habitacionResult = await pool.query(habitacionQuery, [roomType.Type_Code]);
+              if (habitacionResult.rows.length) {
+                const room_type = habitacionResult.rows[0].room_type;
+                try {
+                  await ActualizarOrbeBloqueoAgregar(room_type, grupo.check_in_fecha, grupo.check_out_fecha, schema);
+                  console.log("Sincronizado con Orbe");
+                } catch (error) {
+                  console.error("Imposible sincronizar con Orbe:", error.message);
+                }
+              }
             }
           }
         }
