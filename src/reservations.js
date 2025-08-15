@@ -1,6 +1,6 @@
 const { Pool } = require("pg");
 const { apiVerReservas } = require("./api"); // Placeholder para la función que se implementará después
-const { crearReservaciones } = require("./reservations-controller"); // Placeholder para la función que se implementará después
+//const { crearReservaciones } = require("./reservations-controller"); // Placeholder para la función que se implementará después
 
 // Conexión a la base de datos
 const pool = new Pool({
@@ -26,6 +26,7 @@ const cargarReservas = async () => {
         console.log(`No se recibieron datos para el schema ${schema_id}`);
         continue;
       }
+      /*
 
       // Verificar si existen reservas
       if (data.RESERVATIONS && data.RESERVATIONS.RESERVATION) {
@@ -54,6 +55,7 @@ const cargarReservas = async () => {
       } else {
         console.log(`No se encontró la propiedad RESERVATIONS en schema ${schema_id}`);
       }
+        */
     } catch (error) {
       console.error(`Error al procesar schema ${schema_id}:`, error.message);
     }
