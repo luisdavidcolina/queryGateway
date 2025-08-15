@@ -26,7 +26,7 @@ async function saveReservaDetail(data_detail, cliente_id, data, id_reserva, Book
 
     // Consulta segura para obtener la fuente
     const fuenteQuery = `
-      SELECT id FROM "${schema}".tbl_fuente_reserva WHERE id_ota = $1 LIMIT 1
+      SELECT id FROM ${schema}.tbl_fuente_reserva WHERE id_ota = $1 LIMIT 1
     `;
     const fuenteResult = await poolClient.query(fuenteQuery, [RequestorID]);
     const fuente = fuenteResult.rows[0] || { id: null };
@@ -64,7 +64,7 @@ async function ActualizarOrbeBloqueoAgregar(room_type, fecha_inicio, fecha_fin, 
   const poolClient = await pool.connect();
 
   try {
-    const configQuery = `SELECT value FROM "${schema}".tbl_config WHERE name = $1 LIMIT 1`;
+    const configQuery = `SELECT value FROM ${schema}.tbl_config WHERE name = $1 LIMIT 1`;
     const configResult = await poolClient.query(configQuery, ["data_api"]);
     const datos = configResult.rows.length ? { validate: true, value: configResult.rows[0].value } : { validate: false, value: false };
     const user = datos.validate ? JSON.parse(datos.value) : {};
@@ -115,7 +115,7 @@ async function ActualizarOrbeBloqueoAgregar(room_type, fecha_inicio, fecha_fin, 
     };
 
     const insertBitacoraQuery = `
-      INSERT INTO "${schema}".tbl_bitacoras (
+      INSERT INTO ${schema}.tbl_bitacoras (
         user_id, reserva_id, grupo_id, habitacion_id, fecha_llegada_anterior, fecha_salida_anterior,
         fecha_llegada_actual, fecha_salida_actual, xml, respuesta, tipo_movimiento, created_at, updated_at
       )
