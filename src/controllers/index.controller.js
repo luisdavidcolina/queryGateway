@@ -351,60 +351,7 @@ const cloneSchemaWithEmptyTables = async (req, res) => {
   }
 };
 
-const starbucksIntegration = async (req, res) => {
-  try {
-    let body;
-    //return res.status(200).json({ status: 'recibido' });
-
-    // Verificar si req.body es un JSON válido o un string plano
-    if (typeof req.body === "string") {
-      try {
-        body = JSON.parse(req.body); // Intentar parsear si es string
-      } catch (error) {
-        console.warn("No se pudo parsear req.body, usando texto plano.");
-        body = req.body; // Mantenerlo como string si no es JSON válido
-      }
-    } else {
-      body = req.body; // Si ya es un objeto, mantenerlo
-    }
-    const headers = req.headers;
-    let filename = headers.filename;
-
-    // Procesamiento del filename para extraer locationName correctamente
-    let locationName = filename.match(/^[^\d]+/)[0].trim().replace(/\s+/g, '').toLowerCase();
-
-    locationName = locationName === 'rivertownplaza' ? 'rivertown' : locationName;
-
-    // Lista de tiendas permitidas
-    const allowedLocationNames = [
-      'aeropuerto', 'anag.mendez', 'bairoa', 'buchanan', 'calacostas', 'caribehilton',
-      'colobos', 'condadoplaza', 'condadovillage', 'doradoexpress', 'doubletree',
-      'escorial', 'express', 'gardenhills', 'hotelsanjuan', 'losprados', 'macysponce',
-      'montehiedra', 'osj1-tetuanstreet', 'pdckiosk', 'paseoslascumbres', 'plazacarolinamall',
-      'plazadelmar', 'plazadorada', 'plazalasamericas', 'plazaolmedo', 'plazasultana',
-      'plazadelsol', 'plazalasamericas2', 'plazoleta169', 'riohondo', 'sanpatricio',
-      'santaisabel', 'rivertown', 'auxiliomutuo'
-    ];
-    
-    if (!allowedLocationNames.includes(locationName)) {
-      
-      return res.json({ status: 'recibido pero no publicado' });
-    }
-    
-    // Enviar datos a Workforce
-    const dataPoints = body;
-    const workforce_tools = require("./process_oracle.js");
-    const status = await workforce_tools.sendDataToWorkforce(dataPoints, locationName);
-    
-    return res.json({ status });
-  } catch (e) {
-    return res.status(500).json({ error: e.message || 'Error interno del servidor' });
-  }
-};
-
-
 module.exports = {
-  starbucksIntegration,
   getQuery,
   getInvoices,
   getBookings,

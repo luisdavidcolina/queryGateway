@@ -5,14 +5,14 @@ const limpiarTexto = (texto) => {
   // Eliminar acentos y caracteres especiales (equivalente a iconv UTF-8 a ASCII)
   result = result
     .normalize("NFD") // Descomponer caracteres con acentos
-    .replace(/[\u0300-\u036f]/g, "") // Eliminar marcas diacríticas
-    .replace(/[^a-z0-9\s.]/g, ""); // Eliminar caracteres no alfanuméricos (excepto espacios y puntos)
+    .replaceAll(/[\u0300-\u036f]/g, "") // Eliminar marcas diacríticas
+    .replaceAll(/[^a-z0-9\s.]/g, ""); // Eliminar caracteres no alfanuméricos (excepto espacios y puntos)
 
   // Reemplazar espacios por puntos
-  result = result.replace(/\s+/g, ".");
+  result = result.replaceAll(/\s+/g, ".");
 
   // Eliminar cualquier carácter no alfanumérico (excepto punto)
-  result = result.replace(/[^a-z0-9.]/g, "");
+  result = result.replaceAll(/[^a-z0-9.]/g, "");
 
   return result;
 };
