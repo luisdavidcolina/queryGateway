@@ -60,15 +60,15 @@ const apiVerReservas = async (schema_id) => {
 
     let data = response.data.trim();
     console.log(data)
-    data = replaceAll(data, ' ', '')
+    //data = replaceAll(data, ' ', '')
     console.log(data)
     // Verificar si la respuesta no es vacía
     if (data !== "<RESULT><RESERVATIONS></RESERVATIONS></RESULT>") {
       // Guardar los datos en tbl_config
       const configName = `reserva${Date.now()}`;
       const insertQuery = `
-        INSERT INTO ${schema_id}.tbl_config (name, value)
-        VALUES ($1, $2)
+        INSERT INTO ${schema_id}.tbl_config (name, value, created_at, updated_at)
+        VALUES ($1, $2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
         RETURNING name
       `;
       await pool.query(insertQuery, [configName, data]);
