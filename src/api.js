@@ -59,8 +59,16 @@ const apiVerReservas = async (schema_id) => {
 
     // Parsear la respuesta XML a objeto JavaScript
     const parser = new xml2js.Parser({ explicitArray: false });
-    const parsedData = await parser.parseStringPromise(data);
-    return parsedData;
+    return new Promise((resolve, reject) => {
+      parser.parseString(data, (err, result) => {
+        if (err) {
+          console.error(`Error al parsear XML para schema ${schema_id}:`, err.message);
+          resolve({ data: {} });
+        } else {
+          resolve(result);
+        }
+      });
+    });
 
   } catch (error) {
     console.error(`Error en apiVerReservas para schema ${schema_id}:`, error.message);
@@ -71,3 +79,4 @@ const apiVerReservas = async (schema_id) => {
 module.exports = {
   apiVerReservas,
 };
+
