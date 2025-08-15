@@ -1,7 +1,7 @@
 const { Pool } = require("pg");
 const axios = require("axios");
 const { formatDate } = require("./utils");
-const {nuevos_grupos} = require("./nuevos-grupos");
+const { nuevos_grupos } = require("./nuevos-grupos");
 
 const pool = new Pool({
   user: "diamond",
@@ -24,8 +24,11 @@ async function saveReservaDetail(data_detail, cliente_id, data, id_reserva, Book
       return id_reserva; // No hay datos válidos, retorna el id_reserva actual
     }
 
-    const fuenteQuery = `SELECT id FROM $1.tbl_fuente_reserva WHERE id_ota = $2 LIMIT 1`;
-    const fuenteResult = await poolClient.query(fuenteQuery, [schema, RequestorID]);
+    // Consulta segura para obtener la fuente
+    const fuenteQuery = `
+      SELECT id FROM "${schema}".tbl_fuente_reserva WHERE id_ota = $1 LIMIT 1
+    `;
+    const fuenteResult = await poolClient.query(fuenteQuery, [RequestorID]);
     const fuente = fuenteResult.rows[0] || { id: null };
 
     if (!id_reserva) {
@@ -37,11 +40,11 @@ async function saveReservaDetail(data_detail, cliente_id, data, id_reserva, Book
         huespedes_cantidad: (parseInt(data.Adults || 0) + parseInt(data.Children || 0) + parseInt(data.Infants || 0))
       };
       const insertQuery = `
-        INSERT INTO $1.tbl_reservas (id_cliente, check_in_fecha, check_out_fecha, fuente_reserva_id, huespedes_cantidad, created_at, updated_at)
-        VALUES ($2, $3, $4, $5, $6, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        INSERT INTO ${schema}.tbl_reservas (id_cliente, check_in_fecha, check_out_fecha, fuente_reserva_id, huespedes_cantidad, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
         RETURNING id
       `;
-      const reservaResult = await poolClient.query(insertQuery, [schema, reserva.id_cliente, reserva.check_in_fecha, reserva.check_out_fecha, reserva.fuente_reserva_id, reserva.huespedes_cantidad]);
+      const reservaResult = await poolClient.query(insertQuery, [reserva.id_cliente, reserva.check_in_fecha, reserva.check_out_fecha, reserva.fuente_reserva_id, reserva.huespedes_cantidad]);
       id_reserva = reservaResult.rows[0].id;
     }
 
@@ -57,13 +60,12 @@ async function saveReservaDetail(data_detail, cliente_id, data, id_reserva, Book
   }
 }
 
-
 async function ActualizarOrbeBloqueoAgregar(room_type, fecha_inicio, fecha_fin, id_grupo = null, id_habitacion = null, id_reserva = null, schema) {
   const poolClient = await pool.connect();
 
   try {
-    const configQuery = `SELECT value FROM $1.tbl_config WHERE name = $2 LIMIT 1`;
-    const configResult = await poolClient.query(configQuery, [schema, "data_api"]);
+    const configQuery = `SELECT value FROM "${schema}".tbl_config WHERE name = $1 LIMIT 1`;
+    const configResult = await poolClient.query(configQuery, ["data_api"]);
     const datos = configResult.rows.length ? { validate: true, value: configResult.rows[0].value } : { validate: false, value: false };
     const user = datos.validate ? JSON.parse(datos.value) : {};
 
@@ -113,14 +115,13 @@ async function ActualizarOrbeBloqueoAgregar(room_type, fecha_inicio, fecha_fin, 
     };
 
     const insertBitacoraQuery = `
-      INSERT INTO $1.tbl_bitacoras (
+      INSERT INTO "${schema}".tbl_bitacoras (
         user_id, reserva_id, grupo_id, habitacion_id, fecha_llegada_anterior, fecha_salida_anterior,
         fecha_llegada_actual, fecha_salida_actual, xml, respuesta, tipo_movimiento, created_at, updated_at
       )
-      VALUES ($2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
     `;
     await poolClient.query(insertBitacoraQuery, [
-      schema,
       bitacora.user_id,
       bitacora.reserva_id,
       bitacora.grupo_id,
