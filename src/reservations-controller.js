@@ -101,7 +101,7 @@ const crearReservaciones = async (data, schema) => {
               if (habitacionResult.rows.length) {
                 const room_type = habitacionResult.rows[0].room_type;
                 try {
-                  await ActualizarOrbeBloqueoAgregar(room_type, grupo.check_in_fecha, grupo.check_out_fecha, schema);
+                  await ActualizarOrbeBloqueoAgregar(room_type, grupo.check_in_fecha, grupo.check_out_fecha, grupo.id, null, null, schema);
                   console.log("Sincronizado con Orbe");
                 } catch (error) {
                   console.error("Imposible sincronizar con Orbe:", error.message);
@@ -259,7 +259,7 @@ const crearReservaciones = async (data, schema) => {
               if (habitacionResult.rows.length) {
                 const room_type = habitacionResult.rows[0].room_type;
                 try {
-                  await ActualizarOrbeBloqueoAgregar(room_type, grupo.check_in_fecha, grupo.check_out_fecha, schema);
+                  await ActualizarOrbeBloqueoAgregar(room_type, grupo.check_in_fecha, grupo.check_out_fecha, grupo.id, null, null, schema);
                   console.log("Sincronizado con Orbe");
                 } catch (error) {
                   console.error("Imposible sincronizar con Orbe:", error.message);
