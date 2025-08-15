@@ -2,6 +2,19 @@ const { Pool } = require("pg");
 const axios = require("axios");
 const xml2js = require("xml2js");
 
+function replaceAll(str, find, replace) {
+  // Escapa los caracteres especiales de la cadena `find` para 
+  // que puedan ser utilizados en la expresión regular.
+  const escapedFind = find.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+  // Crea una nueva expresión regular con la bandera global 'g' para 
+  // reemplazar todas las ocurrencias.
+  const regex = new RegExp(escapedFind, 'g');
+
+  // Utiliza el método replace con la expresión regular.
+  return str.replace(regex, replace);
+}
+
 // Conexión a la base de datos
 const pool = new Pool({
   user: "diamond",
@@ -16,7 +29,7 @@ const apiVerReservas = async (schema_id) => {
     // Consultar la tabla tbl_config para obtener data_api
     const query = `SELECT value FROM ${schema_id}.tbl_config WHERE name = $1`;
     const result = await pool.query(query, ["data_api"]);
-    
+
     let datos;
     if (result.rows.length === 0) {
       datos = { validate: false, value: false };
@@ -28,7 +41,7 @@ const apiVerReservas = async (schema_id) => {
     const credentials = datos.validate ? JSON.parse(datos.value) : {};
 
     console.log(credentials)
-    
+
     // Construir la solicitud XML
     const xmlRequest = `
       <ReservationsRequest>
@@ -47,8 +60,8 @@ const apiVerReservas = async (schema_id) => {
 
     let data = response.data.trim();
     console.log(data)
-    data= data.replaceAll(' ','')
- console.log(data)
+    data = replaceAll(data, ' ', '')
+    console.log(data)
     // Verificar si la respuesta no es vacía
     if (data !== "<RESULT><RESERVATIONS></RESERVATIONS></RESULT>") {
       // Guardar los datos en tbl_config
