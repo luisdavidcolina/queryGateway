@@ -11,10 +11,7 @@ const pool = new Pool({
   port: 5432,
 });
 
-
-const schema_ids = ['master']
-
-const cargarReservas = async () => {
+const cargarReservas = async (schema_ids) => {
   for (const schema_id of schema_ids) {
     try {
       console.log(`Procesando schema: ${schema_id}`);
@@ -61,6 +58,8 @@ const cargarReservas = async () => {
     }
   }
 };
+
+cargarReservas(["master"]);
 
 module.exports = {
   cargarReservas,
