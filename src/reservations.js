@@ -50,7 +50,7 @@ const cargarReservas = async (schema_ids) => {
                     console.log(`No se encontraron reservas válidas en schema ${schema_id}`);
                 }
             } else {
-                console.log(`No se encontró la propiedad RESERVATIONS en schema ${schema_id}`);
+                console.log(`No se encontró RESERVATIONS en schema ${schema_id}`);
             }
 
         } catch (error) {

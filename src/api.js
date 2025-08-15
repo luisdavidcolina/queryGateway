@@ -26,6 +26,8 @@ const apiVerReservas = async (schema_id) => {
 
     // Parsear el valor de data_api (JSON)
     const credentials = datos.validate ? JSON.parse(datos.value) : {};
+
+    console.log(credentials)
     
     // Construir la solicitud XML
     const xmlRequest = `
@@ -43,7 +45,8 @@ const apiVerReservas = async (schema_id) => {
       headers: { "Content-Type": "text/xml" },
     });
 
-    const data = response.data.trim();
+    let data = response.data.trim();
+    data= data.replaceAll(' ','')
 
     // Verificar si la respuesta no es vacía
     if (data !== "<RESULT><RESERVATIONS></RESERVATIONS></RESULT>") {
