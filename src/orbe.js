@@ -101,7 +101,7 @@ async function ActualizarOrbeBloqueoAgregar(room_type, fecha_inicio, fecha_fin, 
 
     // Registro en bitácora
     const bitacora = {
-      user_id: 1, // Reemplazar con lógica de autenticación si aplica
+      user_id: 0, 
       reserva_id: id_reserva ? parseInt(id_reserva) : null,
       grupo_id: id_grupo ? parseInt(id_grupo) : null,
       habitacion_id: id_habitacion ? parseInt(id_habitacion) : null,
