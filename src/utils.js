@@ -39,12 +39,13 @@ const limpiarTexto = (texto) => {
 };
 
 const formatDate = (date) => {
-  // Convertir string a fecha y formatear como Y-m-d
+  // Convertir string a fecha y sumar un día para compensar posible desfase
   const d = new Date(date);
   if (isNaN(d)) {
     console.error(`Fecha inválida: ${date}`);
     return date; // Retornar original si no es válida
   }
+  d.setDate(d.getDate() + 1); // Sumar un día
   const year = d.getFullYear();
   const month = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
