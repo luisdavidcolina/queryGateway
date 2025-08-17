@@ -23,8 +23,8 @@ async function CreaarReservaDetalle(ROOM_TYPE, reserva, precio, cliente, id_grup
     const id = habitacionResult.rows[0].id;
 
     const reservaGrupoQuery = `SELECT id FROM ${schema}.tbl_reservas_grupo WHERE id_reservas = $1 LIMIT 1`;
-    const reservaGrupoResult = await poolClient.query(reservaGrupoQuery, [reserva.id]);
-    if (!reservaGrupoResult.rows.length) throw new Error("Grupo de reserva no encontrado");
+    //const reservaGrupoResult = await poolClient.query(reservaGrupoQuery, [reserva.id]);
+    //if (!reservaGrupoResult.rows.length) throw new Error("Grupo de reserva no encontrado");
 
     const ReservasDetalle = {
       id_reservas_grupo: id_grupo,
