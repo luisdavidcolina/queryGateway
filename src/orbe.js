@@ -26,7 +26,7 @@ async function saveReservaDetail(data_detail, cliente_id, data, id_reserva, Book
 
     // Consulta segura para obtener la fuente
     const fuenteQuery = `
-      SELECT id FROM ${schema}.tbl_fuente_reserva WHERE id_ota = $1 LIMIT 1
+      SELECT id FROM ${schema}.tbl_fuentes_reserva WHERE id_ota = $1 LIMIT 1
     `;
     const fuenteResult = await poolClient.query(fuenteQuery, [RequestorID]);
     const fuente = fuenteResult.rows[0] || { id: null };
