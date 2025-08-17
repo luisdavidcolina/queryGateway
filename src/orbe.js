@@ -70,8 +70,7 @@ async function ActualizarOrbeBloqueoAgregar(room_type, fecha_inicio, fecha_fin, 
     const user = datos.validate ? JSON.parse(datos.value) : {};
 
     const url = "https://capi.orbebooking.com/OAF/AOBA-XML/";
-    let xmlRequest = `
-      <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    let xmlRequest = `<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
       <soap:Header>
         <HTNGHeader xmlns="http://htng.org/1.1/Header/"></HTNGHeader>
         <soap:Username>${user.user || ""}</soap:Username>
@@ -98,6 +97,8 @@ async function ActualizarOrbeBloqueoAgregar(room_type, fecha_inicio, fecha_fin, 
     const response = await axios.post(url, xmlRequest, {
       headers: { "Content-Type": "text/xml" },
     });
+
+    console.log({response})
 
     // Registro en bitácora
     const bitacora = {
