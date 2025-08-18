@@ -60,7 +60,7 @@ async function saveReservaDetail(data_detail, cliente_id, data, id_reserva, Book
   }
 }
 
-async function ActualizarOrbeBloqueoAgregar(room_type, fecha_inicio, fecha_fin, id_grupo = null, id_habitacion = null, id_reserva = null, schema) {
+async function ActualizarOrbeBloqueoAgregar(room_type, fecha_inicio, fecha_fin, id_grupo = null, id_habitacion = null, id_reserva = null, schema, quantity = 1) {
   const poolClient = await pool.connect();
 
   try {
@@ -85,7 +85,7 @@ async function ActualizarOrbeBloqueoAgregar(room_type, fecha_inicio, fecha_fin, 
     const endDate = new Date(fecha_fin);
     while (currentDate < endDate) {
       xmlRequest += `
-        <Update Inv_Date="${currentDate.toISOString().split('T')[0]}" Quantity="1" Room_Type="${room_type}" Task="Add"/>
+        <Update Inv_Date="${currentDate.toISOString().split('T')[0]}" Quantity="${quantity}" Room_Type="${room_type}" Task="Add"/>
       `;
       currentDate.setDate(currentDate.getDate() + 1);
     }
@@ -98,11 +98,11 @@ async function ActualizarOrbeBloqueoAgregar(room_type, fecha_inicio, fecha_fin, 
       headers: { "Content-Type": "text/xml" },
     });
 
-    console.log({response})
+    console.log({response});
 
     // Registro en bitácora
     const bitacora = {
-      user_id: 0, 
+      user_id: 0,
       reserva_id: id_reserva ? parseInt(id_reserva) : null,
       grupo_id: id_grupo ? parseInt(id_grupo) : null,
       habitacion_id: id_habitacion ? parseInt(id_habitacion) : null,

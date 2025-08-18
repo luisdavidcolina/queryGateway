@@ -24,6 +24,8 @@ const crearReservaciones = async (data, schema) => {
       email = emailOriginal;
     }
 
+    const isModify = data.Action === "Modify";
+
     // Comprobar tipo de acción
     if (data.Action === "Create" || data.Action === "Modify") {
       console.log(data.Action === "Modify" ? "Modificación de reserva" : "Creación de reserva");
@@ -40,7 +42,7 @@ const crearReservaciones = async (data, schema) => {
           }
           const clienteId = clienteResult.rows[0].id;
 
-          // Buscar reserva asociada
+          // Buscar reserva existente
           const reservaQuery = `SELECT id FROM ${schema}.tbl_reservas WHERE id_cliente = $1 ORDER BY id DESC LIMIT 1`;
           const reservaResult = await pool.query(reservaQuery, [clienteId]);
           if (!reservaResult.rows.length) {
@@ -49,10 +51,22 @@ const crearReservaciones = async (data, schema) => {
           }
           const reservaId = reservaResult.rows[0].id;
 
-          // Buscar grupos
+          // Buscar grupos anteriores
           const gruposQuery = `SELECT id, check_in_fecha, check_out_fecha FROM ${schema}.tbl_reservas_grupo WHERE id_reservas = $1`;
           const gruposResult = await pool.query(gruposQuery, [reservaId]);
           console.log("Grupos encontrados:", gruposResult.rows);
+
+          // Recopilar fechas anteriores de la reserva existente (para +1 en inventario)
+          const oldDatesQuery = `SELECT g.check_in_fecha, g.check_out_fecha, d.id_habitacion_tipo AS type_code
+            FROM ${schema}.tbl_reservas_grupo g
+            JOIN ${schema}.tbl_reservas_detalle d ON g.id = d.id_reservas_grupo
+            WHERE g.id_reservas = $1`;
+          const oldDatesResult = await pool.query(oldDatesQuery, [reservaId]);
+          const oldRoomTypes = oldDatesResult.rows.map(row => ({
+            Type_Code: row.type_code,
+            Arrival: row.check_in_fecha,
+            Departure: row.check_out_fecha
+          }));
 
           for (const grupo of gruposResult.rows) {
             console.log("Procesando grupo:", grupo);
@@ -84,28 +98,26 @@ const crearReservaciones = async (data, schema) => {
             }
           }
 
-          // Sincronizar con Orbe para habitaciones canceladas
-          const roomTypes = Array.isArray(data.ROOM_TYPES.ROOM_TYPE)
-            ? data.ROOM_TYPES.ROOM_TYPE
-            : [data.ROOM_TYPES.ROOM_TYPE];
-          for (const roomType of roomTypes) {
-            if (roomType.Status === "Cancelled") {
-              const habitacionQuery = `
-                SELECT tbl_habitaciones_tipo.room_type
-                FROM ${schema}.tbl_habitaciones
-                JOIN ${schema}.tbl_habitaciones_tipo
-                ON tbl_habitaciones.id_habitacion_tipo = tbl_habitaciones_tipo.id
-                WHERE tbl_habitaciones_tipo.codigo = $1
-              `;
-              const habitacionResult = await pool.query(habitacionQuery, [roomType.Type_Code]);
-              if (habitacionResult.rows.length) {
-                const room_type = habitacionResult.rows[0].room_type;
-                try {
-                  await ActualizarOrbeBloqueoAgregar(room_type, grupo.check_in_fecha, grupo.check_out_fecha, grupo.id, null, null, schema);
-                  console.log("Sincronizado con Orbe");
-                } catch (error) {
-                  console.error("Imposible sincronizar con Orbe:", error.message);
-                }
+          // Aumentar inventario para fechas anteriores (+1)
+          const uniqueOldTypes = [...new Set(oldRoomTypes.map(rt => rt.Type_Code))];
+          for (const typeCode of uniqueOldTypes) {
+            const oldRoomType = oldRoomTypes.find(rt => rt.Type_Code === typeCode);
+            const habitacionQuery = `
+              SELECT tbl_habitaciones_tipo.room_type
+              FROM ${schema}.tbl_habitaciones
+              JOIN ${schema}.tbl_habitaciones_tipo
+              ON tbl_habitaciones.id_habitacion_tipo = tbl_habitaciones_tipo.id
+              WHERE tbl_habitaciones_tipo.codigo = $1
+            `;
+            const habitacionResult = await pool.query(habitacionQuery, [typeCode]);
+            if (habitacionResult.rows.length) {
+              const room_type = habitacionResult.rows[0].room_type;
+              const count = oldRoomTypes.filter(rt => rt.Type_Code === typeCode).length;
+              try {
+                await ActualizarOrbeBloqueoAgregar(room_type, oldRoomType.Arrival, oldRoomType.Departure, null, null, null, schema, count);
+                console.log("Inventario aumentado para fechas anteriores");
+              } catch (error) {
+                console.error("Error al aumentar inventario para fechas anteriores:", error.message);
               }
             }
           }
@@ -188,6 +200,34 @@ const crearReservaciones = async (data, schema) => {
           console.error(`Error al crear reserva en iteración ${index}:`, error.message);
         }
       }
+
+      // Disminuir inventario para fechas nuevas solo en Modify (-1)
+      if (isModify) {
+        const uniqueNewTypes = [...new Set(roomTypes.map(rt => rt.Type_Code))];
+        for (const typeCode of uniqueNewTypes) {
+          const newRoomType = roomTypes.find(rt => rt.Type_Code === typeCode);
+          if (newRoomType.Status !== "Cancelled") {
+            const habitacionQuery = `
+              SELECT tbl_habitaciones_tipo.room_type
+              FROM ${schema}.tbl_habitaciones
+              JOIN ${schema}.tbl_habitaciones_tipo
+              ON tbl_habitaciones.id_habitacion_tipo = tbl_habitaciones_tipo.id
+              WHERE tbl_habitaciones_tipo.codigo = $1
+            `;
+            const habitacionResult = await pool.query(habitacionQuery, [typeCode]);
+            if (habitacionResult.rows.length) {
+              const room_type = habitacionResult.rows[0].room_type;
+              const count = roomTypes.filter(rt => rt.Type_Code === typeCode && rt.Status !== "Cancelled").length;
+              try {
+                await ActualizarOrbeBloqueoAgregar(room_type, newRoomType.Arrival, newRoomType.Departure, null, null, null, schema, -count);
+                console.log("Inventario disminuido para fechas nuevas");
+              } catch (error) {
+                console.error("Error al disminuir inventario para fechas nuevas:", error.message);
+              }
+            }
+          }
+        }
+      }
     }
 
     if (data.Action === "Cancelled") {
@@ -241,29 +281,32 @@ const crearReservaciones = async (data, schema) => {
           } catch (error) {
             console.error("Error al eliminar grupo de reserva:", error.message);
           }
+        }
 
-          // Sincronizar con Orbe para habitaciones canceladas dentro del bucle
-          const roomTypes = Array.isArray(data.ROOM_TYPES.ROOM_TYPE)
-            ? data.ROOM_TYPES.ROOM_TYPE
-            : [data.ROOM_TYPES.ROOM_TYPE];
-          for (const roomType of roomTypes) {
-            if (roomType.Status === "Cancelled") {
-              const habitacionQuery = `
-                SELECT tbl_habitaciones_tipo.room_type
-                FROM ${schema}.tbl_habitaciones
-                JOIN ${schema}.tbl_habitaciones_tipo
-                ON tbl_habitaciones.id_habitacion_tipo = tbl_habitaciones_tipo.id
-                WHERE tbl_habitaciones_tipo.codigo = $1
-              `;
-              const habitacionResult = await pool.query(habitacionQuery, [roomType.Type_Code]);
-              if (habitacionResult.rows.length) {
-                const room_type = habitacionResult.rows[0].room_type;
-                try {
-                  await ActualizarOrbeBloqueoAgregar(room_type, grupo.check_in_fecha, grupo.check_out_fecha, grupo.id, null, null, schema);
-                  console.log("Sincronizado con Orbe");
-                } catch (error) {
-                  console.error("Imposible sincronizar con Orbe:", error.message);
-                }
+        // Sincronizar con Orbe para habitaciones canceladas
+        const roomTypes = Array.isArray(data.ROOM_TYPES.ROOM_TYPE)
+          ? data.ROOM_TYPES.ROOM_TYPE
+          : [data.ROOM_TYPES.ROOM_TYPE];
+        const uniqueRoomTypes = [...new Set(roomTypes.map(rt => rt.Type_Code))];
+        for (const typeCode of uniqueRoomTypes) {
+          const roomType = roomTypes.find(rt => rt.Type_Code === typeCode);
+          if (roomType.Status === "Cancelled") {
+            const habitacionQuery = `
+              SELECT tbl_habitaciones_tipo.room_type
+              FROM ${schema}.tbl_habitaciones
+              JOIN ${schema}.tbl_habitaciones_tipo
+              ON tbl_habitaciones.id_habitacion_tipo = tbl_habitaciones_tipo.id
+              WHERE tbl_habitaciones_tipo.codigo = $1
+            `;
+            const habitacionResult = await pool.query(habitacionQuery, [typeCode]);
+            if (habitacionResult.rows.length) {
+              const room_type = habitacionResult.rows[0].room_type;
+              const count = roomTypes.filter(rt => rt.Type_Code === typeCode && rt.Status === "Cancelled").length;
+              try {
+                await ActualizarOrbeBloqueoAgregar(room_type, roomType.Arrival, roomType.Departure, null, null, null, schema, count);
+                console.log("Sincronizado con Orbe para", typeCode, "con count:", count);
+              } catch (error) {
+                console.error("Imposible sincronizar con Orbe:", error.message);
               }
             }
           }
