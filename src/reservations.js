@@ -12,7 +12,7 @@ const pool = new Pool({
 });
 
 const cargarReservas = async (schema_ids) => {
-    for (const schema_id of schema_ids.slice(0,1)) {
+    for (const schema_id of schema_ids) {
         try {
             console.log(`Procesando schema: ${schema_id}`);
 
