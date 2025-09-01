@@ -110,6 +110,7 @@ const crearReservaciones = async (data, schema) => {
               WHERE tbl_habitaciones_tipo.codigo = $1
             `;
             const habitacionResult = await pool.query(habitacionQuery, [typeCode]);
+            console.log(habitacionResult)
             if (habitacionResult.rows.length) {
               const room_type = habitacionResult.rows[0].room_type;
               const count = oldRoomTypes.filter(rt => rt.Type_Code === typeCode).length;
