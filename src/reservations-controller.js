@@ -62,6 +62,7 @@ const crearReservaciones = async (data, schema) => {
             JOIN ${schema}.tbl_reservas_detalle d ON g.id = d.id_reservas_grupo
             WHERE g.id_reservas = $1`;
           const oldDatesResult = await pool.query(oldDatesQuery, [reservaId]);
+          console.log({oldDatesResult})
           const oldRoomTypes = oldDatesResult.rows.map(row => ({
             Type_Code: row.type_code,
             Arrival: row.check_in_fecha,
@@ -99,7 +100,9 @@ const crearReservaciones = async (data, schema) => {
           }
 
           // Aumentar inventario para fechas anteriores (+1)
+          console.log({oldRoomTypes})
           const uniqueOldTypes = [...new Set(oldRoomTypes.map(rt => rt.Type_Code))];
+          console.log({uniqueOldTypes})
           for (const typeCode of uniqueOldTypes) {
             const oldRoomType = oldRoomTypes.find(rt => rt.Type_Code === typeCode);
             const habitacionQuery = `
@@ -202,33 +205,6 @@ const crearReservaciones = async (data, schema) => {
         }
       }
 
-      // Disminuir inventario para fechas nuevas solo en Modify (-1)
-      if (isModify) {
-        const uniqueNewTypes = [...new Set(roomTypes.map(rt => rt.Type_Code))];
-        for (const typeCode of uniqueNewTypes) {
-          const newRoomType = roomTypes.find(rt => rt.Type_Code === typeCode);
-          if (newRoomType.Status !== "Cancelled") {
-            const habitacionQuery = `
-              SELECT tbl_habitaciones_tipo.room_type
-              FROM ${schema}.tbl_habitaciones
-              JOIN ${schema}.tbl_habitaciones_tipo
-              ON tbl_habitaciones.id_habitacion_tipo = tbl_habitaciones_tipo.id
-              WHERE tbl_habitaciones_tipo.codigo = $1
-            `;
-            const habitacionResult = await pool.query(habitacionQuery, [typeCode]);
-            if (habitacionResult.rows.length) {
-              const room_type = habitacionResult.rows[0].room_type;
-              const count = roomTypes.filter(rt => rt.Type_Code === typeCode && rt.Status !== "Cancelled").length;
-              try {
-                await ActualizarOrbeBloqueoAgregar(room_type, newRoomType.Arrival, newRoomType.Departure, null, null, null, schema, -count);
-                console.log("Inventario disminuido para fechas nuevas");
-              } catch (error) {
-                console.error("Error al disminuir inventario para fechas nuevas:", error.message);
-              }
-            }
-          }
-        }
-      }
     }
 
     if (data.Action === "Cancelled") {
