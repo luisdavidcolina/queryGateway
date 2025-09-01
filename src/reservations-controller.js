@@ -110,13 +110,13 @@ const crearReservaciones = async (data, schema) => {
               FROM ${schema}.tbl_habitaciones
               JOIN ${schema}.tbl_habitaciones_tipo
               ON tbl_habitaciones.id_habitacion_tipo = tbl_habitaciones_tipo.id
-              WHERE tbl_habitaciones_tipo.codigo = $1
+              WHERE tbl_habitaciones_tipo.id = $1
             `;
             const habitacionResult = await pool.query(habitacionQuery, [typeCode]);
             console.log(habitacionResult)
             if (habitacionResult.rows.length) {
               const room_type = habitacionResult.rows[0].room_type;
-              const count = oldRoomTypes.filter(rt => rt.Type_Code === typeCode).length;
+              const count = oldRoomTypes.filter(rt => rt.Type_Code == typeCode).length;
               try {
                 await ActualizarOrbeBloqueoAgregar(room_type, oldRoomType.Arrival, oldRoomType.Departure, null, null, null, schema, count);
                 console.log("Inventario aumentado para fechas anteriores");
