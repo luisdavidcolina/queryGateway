@@ -101,23 +101,20 @@ const crearReservaciones = async (data, schema) => {
           }
 
           // Aumentar inventario para fechas anteriores (+1)
-          console.log({ oldRoomTypes })
-          oldRoomTypes = oldRoomTypes.reduce((acc, current) => {
-            const x = acc.find(item => {
-              return (
-                item.Type_Code === current.Type_Code &&
-                item.Arrival === current.Arrival &&
-                item.Departure === current.Departure &&
-                item.id_reservas_grupo === current.id_reservas_grupo
-              );
-            });
-            if (!x) {
-              return acc.concat([current]);
-            } else {
-              return acc;
+          console.log({ oldRoomTypes });
+
+          const uniqueRoomTypes = new Map();
+
+          for (const room of oldRoomTypes) {
+            const key = JSON.stringify(room); // Convertimos el objeto a una cadena para usarlo como clave
+            if (!uniqueRoomTypes.has(key)) {
+              uniqueRoomTypes.set(key, room);
             }
-          }, []);
-          console.log({ oldRoomTypes })
+          }
+
+          oldRoomTypes = Array.from(uniqueRoomTypes.values());
+
+          console.log({ oldRoomTypes });
           const uniqueOldTypes = [...new Set(oldRoomTypes.map(rt => rt.Type_Code))];
           console.log({ uniqueOldTypes })
           for (const typeCode of uniqueOldTypes) {
