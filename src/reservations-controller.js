@@ -57,16 +57,17 @@ const crearReservaciones = async (data, schema) => {
           console.log("Grupos encontrados:", gruposResult.rows);
 
           // Recopilar fechas anteriores de la reserva existente (para +1 en inventario)
-          const oldDatesQuery = `SELECT g.check_in_fecha, g.check_out_fecha, d.id_habitacion_tipo AS type_code
+          const oldDatesQuery = `SELECT g.check_in_fecha, g.check_out_fecha, d.id_reservas_grupo,d.id_habitacion_tipo AS type_code
             FROM ${schema}.tbl_reservas_grupo g
             JOIN ${schema}.tbl_reservas_detalle d ON g.id = d.id_reservas_grupo
             WHERE g.id_reservas = $1`;
           const oldDatesResult = await pool.query(oldDatesQuery, [reservaId]);
-          console.log({oldDatesResult})
-          const oldRoomTypes = oldDatesResult.rows.map(row => ({
+          console.log({ oldDatesResult })
+          let oldRoomTypes = oldDatesResult.rows.map(row => ({
             Type_Code: row.type_code,
             Arrival: row.check_in_fecha,
-            Departure: row.check_out_fecha
+            Departure: row.check_out_fecha,
+            id_reservas_grupo: row.id_reservas_grupo
           }));
 
           for (const grupo of gruposResult.rows) {
@@ -100,9 +101,25 @@ const crearReservaciones = async (data, schema) => {
           }
 
           // Aumentar inventario para fechas anteriores (+1)
-          console.log({oldRoomTypes})
+          console.log({ oldRoomTypes })
+          oldRoomTypes = oldRoomTypes.reduce((acc, current) => {
+            const x = acc.find(item => {
+              return (
+                item.Type_Code === current.Type_Code &&
+                item.Arrival === current.Arrival &&
+                item.Departure === current.Departure &&
+                item.id_reservas_grupo === current.id_reservas_grupo
+              );
+            });
+            if (!x) {
+              return acc.concat([current]);
+            } else {
+              return acc;
+            }
+          }, []);
+          console.log({ oldRoomTypes })
           const uniqueOldTypes = [...new Set(oldRoomTypes.map(rt => rt.Type_Code))];
-          console.log({uniqueOldTypes})
+          console.log({ uniqueOldTypes })
           for (const typeCode of uniqueOldTypes) {
             const oldRoomType = oldRoomTypes.find(rt => rt.Type_Code === typeCode);
             const habitacionQuery = `
