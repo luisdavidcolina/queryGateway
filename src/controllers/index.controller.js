@@ -1,7 +1,7 @@
 const { Pool, types } = require("pg");
 
-types.setTypeParser(1114, function(stringValue) {
-  return stringValue; 
+types.setTypeParser(1114, function (stringValue) {
+  return stringValue;
 });
 
 
@@ -279,7 +279,7 @@ const getBookings = async (req, res) => {
         check_in_fecha: fecha_chec_in,
         start: new Date(date1.getFullYear(), date1.getMonth(), date1.getDate()),
         grupos: await detallesGrupos(temp.id_reservas, schema),
-        detalles:  detalles(temp, temp.id_reservas, schema),
+        detalles: detalles(temp, temp.id_reservas, schema),
         checkOut: await InfoPagos(temp.id_reservas, temp.numero, schema),
       };
     }));
@@ -368,12 +368,27 @@ const starbucksIntegration = async (req, res) => {
       body = req.body; // Si ya es un objeto, mantenerlo
     }
     const headers = req.headers;
-    let filename = headers.filename;
+    const headers = req.headers;
+    let filename = headers.filename || "";
+    filename = filename.trim().replace(/\s+/g, " ");
 
-    // Procesamiento del filename para extraer locationName correctamente
-    let locationName = filename.match(/^[^\d]+/)[0].trim().replace(/\s+/g, '').toLowerCase();
+    // Dividir en tokens
+    const parts = filename.split(" ");
 
-    locationName = locationName === 'rivertownplaza' ? 'rivertown' : locationName;
+    // Ultimos 2 tokens son businessDate y endTime
+    const filenameBusinessDate = parts[parts.length - 2] || null;
+    const filenameEndTime = parts[parts.length - 1] || null;
+
+    // Lo que queda al inicio es el nombre de la tienda
+    let locationName = parts.slice(0, parts.length - 2).join(" ")
+      .trim()
+      .replace(/\s+/g, "")
+      .toLowerCase();
+
+    if (locationName === "rivertownplaza") {
+      locationName = "rivertown";
+    }
+
 
     // Lista de tiendas permitidas
     const allowedLocationNames = [
@@ -385,17 +400,18 @@ const starbucksIntegration = async (req, res) => {
       'plazadelsol', 'plazalasamericas2', 'plazoleta169', 'riohondo', 'sanpatricio',
       'santaisabel', 'rivertown', 'auxiliomutuo'
     ];
-    
+
     if (!allowedLocationNames.includes(locationName)) {
-      
+
       return res.json({ status: 'recibido pero no publicado' });
     }
-    
+
     // Enviar datos a Workforce
     const dataPoints = body;
     const workforce_tools = require("./process_oracle.js");
-    const status = await workforce_tools.sendDataToWorkforce(dataPoints, locationName);
-    
+    const status = await workforce_tools.sendDataToWorkforce(dataPoints, locationName,
+  { filenameBusinessDate, filenameEndTime });
+
     return res.json({ status });
   } catch (e) {
     return res.status(500).json({ error: e.message || 'Error interno del servidor' });
