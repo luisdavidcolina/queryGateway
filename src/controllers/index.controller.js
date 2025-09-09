@@ -368,7 +368,6 @@ const starbucksIntegration = async (req, res) => {
       body = req.body; // Si ya es un objeto, mantenerlo
     }
     const headers = req.headers;
-    const headers = req.headers;
     let filename = headers.filename || "";
     filename = filename.trim().replace(/\s+/g, " ");
 
