@@ -388,6 +388,9 @@ const starbucksIntegration = async (req, res) => {
       locationName = "rivertown";
     }
 
+    if (locationName === "plazamallhumacao") {
+      locationName = "plazahumacao";
+    }
 
     // Lista de tiendas permitidas
     const allowedLocationNames = [
@@ -397,7 +400,7 @@ const starbucksIntegration = async (req, res) => {
       'montehiedra', 'osj1-tetuanstreet', 'pdckiosk', 'paseoslascumbres', 'plazacarolinamall',
       'plazadelmar', 'plazadorada', 'plazalasamericas', 'plazaolmedo', 'plazasultana',
       'plazadelsol', 'plazalasamericas2', 'plazoleta169', 'riohondo', 'sanpatricio',
-      'santaisabel', 'rivertown', 'auxiliomutuo'
+      'santaisabel', 'rivertown', 'auxiliomutuo', "plazahumacao"
     ];
 
     if (!allowedLocationNames.includes(locationName)) {
@@ -409,7 +412,7 @@ const starbucksIntegration = async (req, res) => {
     const dataPoints = body;
     const workforce_tools = require("./process_oracle.js");
     const status = await workforce_tools.sendDataToWorkforce(dataPoints, locationName,
-  { filenameBusinessDate, filenameEndTime });
+      { filenameBusinessDate, filenameEndTime });
 
     return res.json({ status });
   } catch (e) {
