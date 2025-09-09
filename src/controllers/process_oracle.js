@@ -183,7 +183,6 @@ async function sendDataToWorkforce(data, locationName, meta = {}) {
       location: locationName,
       filenameBusinessDate,
       filenameEndTime,
-      businessDate: businessDate || null,
       ok: false,
       error: String(err?.message || err),
       durationMs: Date.now() - t0,
