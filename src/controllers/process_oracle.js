@@ -165,7 +165,6 @@ async function sendDataToWorkforce(data, locationName, meta = {}) {
       location: locationName,
       filenameBusinessDate,
       filenameEndTime,
-      businessDate,
       ok: true,
       totals,
       counts,
