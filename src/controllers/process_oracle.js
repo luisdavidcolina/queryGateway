@@ -64,130 +64,135 @@ function getTypeForDataStream(dataStreamName) {
 }
 
 async function sendDataToWorkforce(data, locationName, meta = {}) {
-  const { filenameBusinessDate, filenameEndTime } = meta;
+    const { filenameBusinessDate, filenameEndTime } = meta;
 
-  const correlationId = makeCorrelationId();
-  const t0 = Date.now();
+    const correlationId = makeCorrelationId();
+    const t0 = Date.now();
 
-  log('start', {
-    correlationId,
-    location: locationName,
-    filenameBusinessDate,
-    filenameEndTime,
-    records: Array.isArray(data) ? data.length : 0,
-  });
+    log('start', {
+        correlationId,
+        location: locationName,
+        filenameBusinessDate,
+        filenameEndTime,
+        records: Array.isArray(data) ? data.length : 0,
+    });
 
-  try {
-    let businessDate;
-    const jsonWorkforceDataStreams = await getDataStreamListFromWorkforce(
-      'cc56e0550daabe8c1eb753d2cbed1b9e6485b20313b8f9ea59cfea11f72f975e',
-      locationName
-    );
+    try {
+        let businessDate;
+        const jsonWorkforceDataStreams = await getDataStreamListFromWorkforce(
+            'cc56e0550daabe8c1eb753d2cbed1b9e6485b20313b8f9ea59cfea11f72f975e',
+            locationName
+        );
 
-    let jsonWorkforceDataStream = [];
+        let jsonWorkforceDataStream = [];
 
-    // Procesar todos los registros
-    for (const x of data) {
-      const dataStreamNames = Array.isArray(x['Data Stream Name']) ? x['Data Stream Name'] : [x['Data Stream Name']];
-      const dataTypes       = Array.isArray(x['Data Type']) ? x['Data Type'] : [x['Data Type']];
-      const dataPoints      = Array.isArray(x['Data Point']) ? x['Data Point'] : [x['Data Point']];
+        // Procesar todos los registros
+        for (const x of data) {
+            const dataStreamNames = Array.isArray(x['Data Stream Name']) ? x['Data Stream Name'] : [x['Data Stream Name']];
+            const dataTypes = Array.isArray(x['Data Type']) ? x['Data Type'] : [x['Data Type']];
+            const dataPoints = Array.isArray(x['Data Point']) ? x['Data Point'] : [x['Data Point']];
 
-      businessDate = x.Date;
+            businessDate = x.Date;
 
-      let [day, month, year] = businessDate.split('/');
-      if (day.length === 1) day = '0' + day;
-      if (month.length === 1) month = '0' + month;
-      businessDate = `${year}-${month}-${day}`;
+            let [day, month, year] = businessDate.split('/');
+            if (day.length === 1) day = '0' + day;
+            if (month.length === 1) month = '0' + month;
+            businessDate = `${year}-${month}-${day}`;
 
-      if (!dataStreamNames[0]?.includes('MODIFIERS')) {
-        for (let i = 0; i < dataStreamNames.length; i++) {
-          let dataStreamName = typeof dataStreamNames[i] === "string"
-            ? dataStreamNames[i].split(' ').join('').toLowerCase()
-            : '';
+            if (!dataStreamNames[0]?.includes('MODIFIERS')) {
+                for (let i = 0; i < dataStreamNames.length; i++) {
+                    let dataStreamName = typeof dataStreamNames[i] === "string"
+                        ? dataStreamNames[i].split(' ').join('').toLowerCase()
+                        : '';
 
-          dataStreamName = dataStreamName.includes('plazamallhumacao')
-            ? dataStreamName.replace('plazamallhumacao', 'plazahumacao')
-            : dataStreamName;
+                    dataStreamName = dataStreamName.includes('plazamallhumacao')
+                        ? dataStreamName.replace('plazamallhumacao', 'plazahumacao')
+                        : dataStreamName;
 
-          let dataStreamId = jsonWorkforceDataStreams[dataStreamName];
-          if (!dataStreamId) {
-            console.error(`Data stream not found in Workforce: ${dataStreamNames[i]}`);
-            continue;
-          }
+                    dataStreamName = dataStreamName.includes('rivertownplaza')
+                        ? dataStreamName.replace('rivertownplaza', 'rivertown')
+                        : dataStreamName;
 
-          jsonWorkforceDataStream.push({
-            datastream_id: dataStreamId,
-            time: await convertDateTimeToEpoch(x.Date, convertTimeFormat(x.Time)),
-            stat: Number(dataPoints[i]),
-            type: dataTypes[i],
-          });
+
+                    let dataStreamId = jsonWorkforceDataStreams[dataStreamName];
+                    if (!dataStreamId) {
+                        console.error(`Data stream not found in Workforce: ${dataStreamNames[i]}`);
+                        continue;
+                    }
+
+                    jsonWorkforceDataStream.push({
+                        datastream_id: dataStreamId,
+                        time: await convertDateTimeToEpoch(x.Date, convertTimeFormat(x.Time)),
+                        stat: Number(dataPoints[i]),
+                        type: dataTypes[i],
+                    });
+                }
+            }
         }
-      }
+
+        // Generar base inicial
+        const initialData = await generateInitialData(jsonWorkforceDataStreams, businessDate);
+
+        // Merge con stats reales
+        let stats = [];
+        for (const storestat of initialData) {
+            const index = jsonWorkforceDataStream.findIndex(
+                x => x.datastream_id === storestat.datastream_id && x.time === storestat.time
+            );
+            stats.push(index === -1 ? storestat : jsonWorkforceDataStream[index]);
+        }
+
+        const json = { stats };
+
+        // ---- Totales para logging
+        const totals = stats.reduce(
+            (acc, s) => {
+                const t = String(s.type || '').toLowerCase();
+                const v = Number(s.stat) || 0;
+                if (t === 'sales') acc.sales += v;
+                if (t === 'checks') acc.checks += v;
+                return acc;
+            },
+            { sales: 0, checks: 0 }
+        );
+
+        const counts = {
+            stats: stats.length,
+            datastreams: Object.keys(jsonWorkforceDataStreams || {}).length,
+        };
+        // --------------------------
+
+        // Publicar en Workforce
+        await publishDataStreamToWorkforce(json, 'cc56e0550daabe8c1eb753d2cbed1b9e6485b20313b8f9ea59cfea11f72f975e');
+
+        log('finish', {
+            correlationId,
+            location: locationName,
+            filenameBusinessDate,
+            filenameEndTime,
+            ok: true,
+            totals,
+            counts,
+            durationMs: Date.now() - t0,
+        });
+
+        return {
+            status: 'Process completed including the publishing to Workforce API.',
+            json,
+            totals,
+        };
+    } catch (err) {
+        log('finish', {
+            correlationId,
+            location: locationName,
+            filenameBusinessDate,
+            filenameEndTime,
+            ok: false,
+            error: String(err?.message || err),
+            durationMs: Date.now() - t0,
+        });
+        throw err;
     }
-
-    // Generar base inicial
-    const initialData = await generateInitialData(jsonWorkforceDataStreams, businessDate);
-
-    // Merge con stats reales
-    let stats = [];
-    for (const storestat of initialData) {
-      const index = jsonWorkforceDataStream.findIndex(
-        x => x.datastream_id === storestat.datastream_id && x.time === storestat.time
-      );
-      stats.push(index === -1 ? storestat : jsonWorkforceDataStream[index]);
-    }
-
-    const json = { stats };
-
-    // ---- Totales para logging
-    const totals = stats.reduce(
-      (acc, s) => {
-        const t = String(s.type || '').toLowerCase();
-        const v = Number(s.stat) || 0;
-        if (t === 'sales') acc.sales += v;
-        if (t === 'checks') acc.checks += v;
-        return acc;
-      },
-      { sales: 0, checks: 0 }
-    );
-
-    const counts = {
-      stats: stats.length,
-      datastreams: Object.keys(jsonWorkforceDataStreams || {}).length,
-    };
-    // --------------------------
-
-    // Publicar en Workforce
-    await publishDataStreamToWorkforce(json, 'cc56e0550daabe8c1eb753d2cbed1b9e6485b20313b8f9ea59cfea11f72f975e');
-
-    log('finish', {
-      correlationId,
-      location: locationName,
-      filenameBusinessDate,
-      filenameEndTime,
-      ok: true,
-      totals,
-      counts,
-      durationMs: Date.now() - t0,
-    });
-
-    return {
-      status: 'Process completed including the publishing to Workforce API.',
-      json,
-      totals,
-    };
-  } catch (err) {
-    log('finish', {
-      correlationId,
-      location: locationName,
-      filenameBusinessDate,
-      filenameEndTime,
-      ok: false,
-      error: String(err?.message || err),
-      durationMs: Date.now() - t0,
-    });
-    throw err;
-  }
 }
 
 
