@@ -404,6 +404,7 @@ const starbucksIntegration = async (req, res) => {
     ];
 
     if (!allowedLocationNames.includes(locationName)) {
+      console.log('Locacion no permitida:', locationName)
 
       return res.json({ status: 'recibido pero no publicado' });
     }
