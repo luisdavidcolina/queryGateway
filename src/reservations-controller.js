@@ -213,6 +213,9 @@ const crearReservaciones = async (data, schema) => {
               data.SOURCE.RequestorID,
               schema
             );
+            
+          } else {
+            //subir inventario
           }
         } catch (error) {
           console.error(`Error al crear reserva en iteración ${index}:`, error.message);

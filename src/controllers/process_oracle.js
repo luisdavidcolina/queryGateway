@@ -205,7 +205,7 @@ function publishDataStreamToWorkforce(jsonDataStream, token) {
         var request = require('request');
         var options = {
             'method': 'POST',
-            'url': 'https://my.tanda.co/api/v2/storestats/for_datastream',
+            'url': 'https://my.workforce.com/api/v2/storestats/for_datastream',
             'headers': {
                 'Authorization': 'bearer ' + token,
                 'Content-Type': 'application/json'
