@@ -108,7 +108,9 @@ async function CrearReservaDetalles(id_grupos, ROOM_TYPE, id_reserva, cliente, s
     const reservaQuery = `SELECT check_in_fecha, check_out_fecha FROM ${schema}.tbl_reservas WHERE id = $1`;
     const reservaResult = await poolClient.query(reservaQuery, [ id_reserva]);
     const reserva = reservaResult.rows[0];
-    const precio_total = parseFloat(ROOM_TYPE.Average_Rate) || 0;
+    let precio_total = parseFloat(ROOM_TYPE.Average_Rate) || 0;
+    if  (schema==='hotel_hotelbramador')
+      precio_total = precio_total*950;
     console.log(`Precio: ${precio_total}`);
 
     let currentDate = new Date(reserva.check_in_fecha);

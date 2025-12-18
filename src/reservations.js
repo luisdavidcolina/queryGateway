@@ -61,7 +61,7 @@ const cargarReservas = async (schema_ids) => {
     }
 };
 
-cargarReservas(["master", 'hotel_hotelkamana', 'hotel_hoteltumpis', 'hotel_hotelvalverde', 'hotel_hotelvolcanolodge', 'hotel_hotelyemaya']);
+cargarReservas(["master", 'hotel_hotelkamana', 'hotel_hoteltumpis', 'hotel_hotelvalverde', 'hotel_hotelvolcanolodge', 'hotel_hotelyemaya', 'hotel_hotelbramador']);
 
 module.exports = {
     cargarReservas,
