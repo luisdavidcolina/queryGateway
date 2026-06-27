@@ -1,4 +1,5 @@
 const { Pool, types } = require("pg");
+const bcrypt = require("bcryptjs");
 
 types.setTypeParser(1114, function (stringValue) {
   return stringValue;
@@ -295,17 +296,22 @@ const getBookings = async (req, res) => {
 
 const cloneSchemaWithEmptyTables = async (req, res) => {
   const { hotelName } = req.params;
+  const { adminName, adminEmail, adminPassword } = req.body || {};
   const newSchema = `hotel_${hotelName}`;
 
-  // Tablas de las que se copiarán tanto la estructura como los datos
+  // Tablas de catálogo: se copian estructura + datos
   const tablesToCopyData = [
     "model_has_roles",
+    "permissions",
+    "roles",
+    "role_has_permissions",
     "tbl_camas",
-    "tbl_clientes_tipo",
     "tbl_categorias",
+    "tbl_clientes_tipo",
     "tbl_config",
     "tbl_desayunos",
     "tbl_documento_tipo",
+    "tbl_fuentes_reservas",
     "tbl_generos",
     "tbl_habitaciones",
     "tbl_habitaciones_detalle_estado",
@@ -320,34 +326,61 @@ const cloneSchemaWithEmptyTables = async (req, res) => {
     "tbl_paises",
     "tbl_puntos_ventas",
     "tbl_rate",
+    "tbl_reservas_estado",
     "tbl_tipo_pagos"
   ];
 
+  const client = await pool.connect();
   try {
-    // Crear el nuevo esquema
-    await pool.query(`CREATE SCHEMA IF NOT EXISTS ${newSchema}`);
+    await client.query("BEGIN");
 
-    // Obtener todas las tablas del esquema original
-    const { rows: allTables } = await pool.query(`
+    // Crear el nuevo esquema
+    await client.query(`CREATE SCHEMA IF NOT EXISTS ${newSchema}`);
+
+    // Obtener todas las tablas del esquema plantilla
+    const { rows: allTables } = await client.query(`
       SELECT table_name
       FROM information_schema.tables
       WHERE table_schema = 'hotel_hotelkamana'
+      ORDER BY table_name
     `);
 
     // Clonar tablas con y sin datos
     for (const { table_name } of allTables) {
-      const createTableQuery = `CREATE TABLE ${newSchema}."${table_name}" (LIKE hotel_hotelkamana."${table_name}" INCLUDING ALL)`;
-      await pool.query(createTableQuery);
-
-      // Solo copiar datos para las tablas especificadas
+      await client.query(
+        `CREATE TABLE ${newSchema}."${table_name}" (LIKE hotel_hotelkamana."${table_name}" INCLUDING ALL)`
+      );
       if (tablesToCopyData.includes(table_name)) {
-        await pool.query(`INSERT INTO ${newSchema}."${table_name}" SELECT * FROM hotel_hotelkamana."${table_name}"`);
+        await client.query(
+          `INSERT INTO ${newSchema}."${table_name}" SELECT * FROM hotel_hotelkamana."${table_name}"`
+        );
       }
     }
 
-    res.status(200).json({ message: `Schema ${newSchema} created successfully with specified tables copied.` });
+    // Crear usuario en master.users
+    let usuarioCreado = null;
+    if (adminName && adminEmail && adminPassword) {
+      const passwordHash = await bcrypt.hash(adminPassword, 12);
+      const insertUser = await client.query(
+        `INSERT INTO master.users (nombres, email, usuario, schema, password, activo, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, true, NOW(), NOW()) RETURNING id`,
+        [adminName, adminEmail, adminName.toLowerCase().replace(/\s+/g, ''), newSchema, passwordHash]
+      );
+      usuarioCreado = { id: insertUser.rows[0].id, nombres: adminName, email: adminEmail, usuario: adminName.toLowerCase().replace(/\s+/g, ''), schema: newSchema };
+    }
+
+    await client.query("COMMIT");
+    res.status(200).json({
+      message: `Schema ${newSchema} creado exitosamente.`,
+      schema: newSchema,
+      tablasCopiadas: tablesToCopyData,
+      usuarioAdmin: usuarioCreado,
+    });
   } catch (error) {
+    await client.query("ROLLBACK");
     res.status(500).json({ error: error.message });
+  } finally {
+    client.release();
   }
 };
 

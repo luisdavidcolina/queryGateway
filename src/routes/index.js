@@ -7,7 +7,7 @@ const { starbucksIntegration } = require("../controllers/index.controller");
 router.get("/query/:id", getQuery);
 router.get("/invoices", getInvoices);
 router.get("/bookings", getBookings);
-router.get("/cloneSchemaWithEmptyTables/:hotelName", cloneSchemaWithEmptyTables);
+router.post("/cloneSchemaWithEmptyTables/:hotelName", cloneSchemaWithEmptyTables);
 
 
 router.post("/starbucks/integration", starbucksIntegration);
