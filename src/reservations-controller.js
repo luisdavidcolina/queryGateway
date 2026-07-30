@@ -11,6 +11,99 @@ const pool = new Pool({
   port: 5432,
 });
 
+// Normaliza un nombre para comparar sin importar mayúsculas, acentos, espacios ni signos.
+const normalizarNombre = (texto) => limpiarTexto(texto || "").replace(/\./g, "");
+
+// Deja constancia de una anulación de Orbe que no se pudo cruzar con ninguna reserva,
+// para que recepción la anule a mano. NO borra nada. Se guarda junto al XML recibido,
+// en la misma tbl_config, con un nombre reconocible.
+const registrarAnulacionSinMatch = async (schema, data, contexto) => {
+  try {
+    const name = `orbe_anulacion_sin_match_${Date.now()}`;
+    const value = JSON.stringify({
+      motivo: "No se pudo identificar con seguridad la reserva a anular",
+      contexto: contexto || null,
+      nombre: data.Global_Name || null,
+      apellido: data.Global_Surname || null,
+      booking_code: data.Booking_Code || null,
+      payload: data,
+    });
+    await pool.query(
+      `INSERT INTO ${schema}.tbl_config (name, value, created_at, updated_at)
+       VALUES ($1, $2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+      [name, value]
+    );
+    console.error(
+      `[ORBE] Anulación sin match, registrada para revisión manual en ${schema}.tbl_config (${name}):`,
+      data.Global_Name, data.Global_Surname, data.Booking_Code || ""
+    );
+  } catch (e) {
+    console.error("[ORBE] No se pudo registrar la anulación sin match:", e.message);
+  }
+};
+
+// Localiza la reserva a anular probando, en orden y sin tocar registros:
+//  1) correo — en ambos formatos autogenerados (Orbe `nombre.apellido@autogenerado.com`
+//     y el viejo del importador Excel `NOMBRE_APELLIDO@mail.com`) y el correo real;
+//  2) fechas exactas del grupo activo (llegada/salida) — rescata las importadas por Excel,
+//     cuyo correo/apellido no cuadra (p.ej. MERCLE vs MERKLE);
+//  3) nombre normalizado como desempate si las fechas dan más de una candidata.
+// Devuelve { reservaId, via } o null si no hay match seguro (entonces se avisa, no se borra).
+const buscarReservaParaAnular = async (data, email, schema) => {
+  const roomTypes = Array.isArray(data.ROOM_TYPES && data.ROOM_TYPES.ROOM_TYPE)
+    ? data.ROOM_TYPES.ROOM_TYPE
+    : (data.ROOM_TYPES && data.ROOM_TYPES.ROOM_TYPE ? [data.ROOM_TYPES.ROOM_TYPE] : []);
+  const canceladas = roomTypes.filter((rt) => rt.Status === "Cancelled");
+  const rtsMatch = canceladas.length ? canceladas : roomTypes;
+  const arrivals = [...new Set(rtsMatch.map((rt) => rt.Arrival).filter(Boolean))];
+  const departures = [...new Set(rtsMatch.map((rt) => rt.Departure).filter(Boolean))];
+
+  // Correos posibles: el que ya se calculó (Orbe o real) + el formato del importador Excel.
+  const emailExcel = `${(data.Global_Name || "").toUpperCase()}_${(data.Global_Surname || "").replace(/\s+/g, "").toUpperCase()}@mail.com`;
+  const emailsPosibles = [...new Set([email, emailExcel].filter(Boolean).map((e) => e.toLowerCase()))];
+
+  // 1) Por correo (cualquiera de los formatos)
+  const porEmail = await pool.query(
+    `SELECT r.id
+       FROM ${schema}.tbl_reservas r
+       JOIN ${schema}.tbl_clientes c ON c.id = r.id_cliente
+      WHERE lower(c.email) = ANY($1)
+      ORDER BY r.id DESC
+      LIMIT 1`,
+    [emailsPosibles]
+  );
+  if (porEmail.rows.length) return { reservaId: porEmail.rows[0].id, via: "correo" };
+
+  // 2) Por fechas exactas del grupo activo (rescata las importadas por Excel)
+  if (arrivals.length && departures.length) {
+    const porFechas = await pool.query(
+      `SELECT DISTINCT r.id, c.nombre
+         FROM ${schema}.tbl_reservas r
+         JOIN ${schema}.tbl_reservas_grupo g
+           ON g.id_reservas = r.id AND g.deleted_at IS NULL
+         JOIN ${schema}.tbl_clientes c ON c.id = r.id_cliente
+        WHERE g.check_in_fecha = ANY($1) AND g.check_out_fecha = ANY($2)`,
+      [arrivals, departures]
+    );
+    if (porFechas.rows.length === 1) {
+      return { reservaId: porFechas.rows[0].id, via: "fechas" };
+    }
+    if (porFechas.rows.length > 1) {
+      // 3) Desempate por nombre normalizado
+      const objetivo = normalizarNombre(data.Global_Name);
+      const candidatas = porFechas.rows.filter((row) => {
+        const n = normalizarNombre(row.nombre);
+        return n === objetivo || n.includes(objetivo) || objetivo.includes(n);
+      });
+      if (candidatas.length === 1) {
+        return { reservaId: candidatas[0].id, via: "fechas+nombre" };
+      }
+    }
+  }
+
+  return null;
+};
+
 const crearReservaciones = async (data, schema) => {
   try {
     // Procesar email
@@ -229,21 +322,15 @@ const crearReservaciones = async (data, schema) => {
 
       // Eliminar reserva existente
       try {
-        const clienteQuery = `SELECT id FROM ${schema}.tbl_clientes WHERE email = $1 ORDER BY id DESC LIMIT 1`;
-        const clienteResult = await pool.query(clienteQuery, [email]);
-        if (!clienteResult.rows.length) {
-          console.error("No se encontró cliente con email", email);
+        // Identificar la reserva por correo (ambos formatos), fechas o nombre.
+        // Si no hay match seguro: avisar y NO borrar nada (Orbe la envía una sola vez).
+        const match = await buscarReservaParaAnular(data, email, schema);
+        if (!match) {
+          await registrarAnulacionSinMatch(schema, data, "rama Cancelled");
           return;
         }
-        const clienteId = clienteResult.rows[0].id;
-
-        const reservaQuery = `SELECT id FROM ${schema}.tbl_reservas WHERE id_cliente = $1 ORDER BY id DESC LIMIT 1`;
-        const reservaResult = await pool.query(reservaQuery, [clienteId]);
-        if (!reservaResult.rows.length) {
-          console.error("No se encontró reserva para cliente", clienteId);
-          return;
-        }
-        const reservaId = reservaResult.rows[0].id;
+        const reservaId = match.reservaId;
+        console.log(`Anulando reserva ${reservaId} (identificada por ${match.via})`);
 
         const gruposQuery = `SELECT id, check_in_fecha, check_out_fecha FROM ${schema}.tbl_reservas_grupo WHERE id_reservas = $1`;
         const gruposResult = await pool.query(gruposQuery, [reservaId]);
