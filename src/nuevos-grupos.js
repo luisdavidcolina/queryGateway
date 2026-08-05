@@ -15,7 +15,8 @@ async function CreaarReservaDetalle(ROOM_TYPE, reserva, precio, cliente, id_grup
     const impuestoQuery = `SELECT valor FROM  ${schema}.tbl_impuestos WHERE principal = true LIMIT 1`;
     const impuestoResult = await poolClient.query(impuestoQuery);
     if (!impuestoResult.rows.length) throw new Error("Impuesto principal no encontrado");
-    const valor_impuesto = (impuestoResult.rows[0].valor / 100) + 1;
+    const impuestoPct = parseFloat(impuestoResult.rows[0].valor) || 0; // ej. 13 (%)
+    const valor_impuesto = (impuestoPct / 100) + 1;
 
     const habitacionQuery = `SELECT id FROM ${schema}.tbl_habitaciones_tipo WHERE codigo = $1 LIMIT 1`;
     const habitacionResult = await poolClient.query(habitacionQuery, [ROOM_TYPE.Type_Code]);
@@ -37,7 +38,10 @@ async function CreaarReservaDetalle(ROOM_TYPE, reserva, precio, cliente, id_grup
       check_in_fecha: reserva.check_in_fecha,
       check_out_fecha: reserva.check_out_fecha,
       id_reserva_detalle_estado_habitacion: 1,
-      numero_impuesto: 0,
+      // La TASA del impuesto principal (ej. 13), igual que la UI (CreaarReservaDetalle2:
+      // numero_impuesto = $iva). El reporte de ventas calcula neto*numero_impuesto/100, y así
+      // cuadra con el de deudas (precio_total - precio_neto). Antes iba 0 -> ventas mostraba IVA 0.
+      numero_impuesto: impuestoPct,
       numero_impuesto2: 0,
       servicio: 0,
     };
