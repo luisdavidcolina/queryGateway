@@ -136,13 +136,16 @@ async function ActualizarOrbeBloqueoAgregar(room_type, fecha_inicio, fecha_fin, 
     // 18->20 al 17->20; lo unico que cambio fue que se agrego el 17, y se mandaron
     // +1 en el 18 y +1 en el 19. Ver docs/orbe-api.md (G5).
     const saltar = new Set(excluir || []);
+    // Orbe rechaza las noches ya pasadas ("Past Dates Not Registered") y nadie
+    // compra una habitacion para ayer, asi que no se mandan.
+    const hoy = new Date().toISOString().split('T')[0];
     let enviados = 0;
 
     let currentDate = new Date(fecha_inicio);
     const endDate = new Date(fecha_fin);
     while (currentDate < endDate) {
       const dia = currentDate.toISOString().split('T')[0];
-      if (!saltar.has(dia)) {
+      if (!saltar.has(dia) && dia >= hoy) {
         xmlRequest += `
         <Update Inv_Date="${dia}" Quantity="${quantity}" Room_Type="${room_type}" Task="Add"/>
       `;
@@ -175,20 +178,31 @@ async function ActualizarOrbeBloqueoAgregar(room_type, fecha_inicio, fecha_fin, 
     // El cuerpo se guarda junto al XML: en SOAP el fallo viaja DENTRO de un 200, y
     // `respuesta` es un varchar(191) donde no entra. Ver docs/orbe-api.md (B2).
     const cuerpo = typeof response.data === 'string' ? response.data : JSON.stringify(response.data);
-    const hayFault = /fault/i.test(cuerpo || '');
-    if (hayFault) {
-      console.error(`[ORBE] ${tipo_movimiento}: Fault en la respuesta`, cuerpo);
+
+    // Orbe RECHAZA con HTTP 200: lo unico que distingue aplicado de descartado es
+    // el <success> del cuerpo. success=1 aceptado, cualquier otro es rechazo, con
+    // el motivo en los <warning>. Ver App\Orbe\Respuesta en el repo del PMS.
+    const m = /<success>\s*(\d+)\s*<\/success>/i.exec(cuerpo || '');
+    const avisos = [...String(cuerpo || '').matchAll(/<warning>(.*?)<\/warning>/gis)]
+      .map(x => x[1].replace(/\s+/g, ' ').trim());
+    const rechazado = (m && m[1] !== '1') || /soap:Fault/i.test(cuerpo || '');
+    const motivo = rechazado
+      ? ([...new Set(avisos)].join(' · ') || `Orbe no aplico el cambio (success ${m ? m[1] : '?'})`)
+      : null;
+
+    if (rechazado) {
+      console.error(`[ORBE] ${tipo_movimiento} RECHAZADO:`, motivo);
     }
 
     await registrarBitacora(poolClient, schema, {
       id_reserva, id_grupo, id_habitacion,
       fecha_inicio, fecha_fin,
       xml: `${xmlRequest}\n<!-- RESPUESTA ${response.status} -->\n${cuerpo}`,
-      respuesta: `resp: ${response.status}`,
+      respuesta: rechazado ? `RECHAZADO ${motivo}` : `resp: ${response.status}`,
       tipo_movimiento,
     });
 
-    return { validate: !hayFault, enviados };
+    return { validate: !rechazado, enviados, motivo };
   } catch (error) {
     console.error("Error en ActualizarOrbeBloqueoAgregar:", error.message);
     throw error;
