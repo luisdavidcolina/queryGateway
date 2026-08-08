@@ -60,7 +60,53 @@ async function saveReservaDetail(data_detail, cliente_id, data, id_reserva, Book
   }
 }
 
-async function ActualizarOrbeBloqueoAgregar(room_type, fecha_inicio, fecha_fin, id_grupo = null, id_habitacion = null, id_reserva = null, schema, quantity = 1) {
+/** Las noches de una estadia, en 'YYYY-MM-DD'. La de salida NO se duerme. */
+function nochesDe(desde, hasta) {
+  const noches = [];
+  let d = new Date(desde);
+  const fin = new Date(hasta);
+  while (d < fin) {
+    noches.push(d.toISOString().split('T')[0]);
+    d = new Date(d.getTime());
+    d.setDate(d.getDate() + 1);
+  }
+  return noches;
+}
+
+/**
+ * Escribe la bitacora. SIEMPRE, incluso cuando no se mando nada: sin eso, un
+ * neteo de la bitacora puede dar cero y aun asi haber descuadre.
+ * Ver docs/orbe-api.md §8.quater (B1).
+ */
+async function registrarBitacora(poolClient, schema, b) {
+  const { formatDate: fd } = require("./utils");
+  await poolClient.query(
+    `INSERT INTO ${schema}.tbl_bitacoras (
+       user_id, reserva_id, grupo_id, habitacion_id, fecha_llegada_anterior, fecha_salida_anterior,
+       fecha_llegada_actual, fecha_salida_actual, xml, respuesta, tipo_movimiento, created_at, updated_at
+     ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+    [
+      0,
+      b.id_reserva ? parseInt(b.id_reserva) : null,
+      b.id_grupo ? parseInt(b.id_grupo) : null,
+      b.id_habitacion ? parseInt(b.id_habitacion) : null,
+      fd(b.fecha_inicio), fd(b.fecha_fin), fd(b.fecha_inicio), fd(b.fecha_fin),
+      b.xml,
+      (b.respuesta || '').substring(0, 191),
+      b.tipo_movimiento,
+    ]
+  );
+}
+
+/**
+ * Le manda un delta de inventario a Orbe.
+ *
+ * @param {string[]} excluir  noches 'YYYY-MM-DD' que NO hay que tocar (las que la
+ *                            estadia nueva sigue ocupando).
+ * @param {string} tipo_movimiento  el rotulo real. Antes iba "Anular reserva" FIJO,
+ *                            tambien en los Modify, asi que la bitacora mentia.
+ */
+async function ActualizarOrbeBloqueoAgregar(room_type, fecha_inicio, fecha_fin, id_grupo = null, id_habitacion = null, id_reserva = null, schema, quantity = 1, excluir = [], tipo_movimiento = "Anular reserva") {
   const poolClient = await pool.connect();
 
   try {
@@ -77,17 +123,45 @@ async function ActualizarOrbeBloqueoAgregar(room_type, fecha_inicio, fecha_fin, 
         <soap:Password>${user.pass || ""}</soap:Password>
       </soap:Header>
       <soap:Body>
-      <InventoryUpdateRequest TimeStamp="2017-8-22T18:12:16" Version="1.00">
+      <InventoryUpdateRequest TimeStamp="${new Date().toISOString().slice(0,19)}" Version="1.00">
       <INVENTORY HotelCode="${user.code || ""}" HotelName="DIAMOND DEMO">
     `;
+
+    // `excluir` son las noches que NO hay que tocar porque la estadia nueva las
+    // sigue ocupando. Sin esto se devolvia el rango viejo COMPLETO: en un Modify
+    // que corre la estadia un dia —el caso normal— se liberaban noches en las que
+    // el huesped se queda, y Orbe pasaba a ofrecer una habitacion ocupada.
+    //
+    // Caso real (Yemaya, 6-ago-2026, bitacora 18756): OTA-6061332159-03 paso del
+    // 18->20 al 17->20; lo unico que cambio fue que se agrego el 17, y se mandaron
+    // +1 en el 18 y +1 en el 19. Ver docs/orbe-api.md (G5).
+    const saltar = new Set(excluir || []);
+    let enviados = 0;
 
     let currentDate = new Date(fecha_inicio);
     const endDate = new Date(fecha_fin);
     while (currentDate < endDate) {
-      xmlRequest += `
-        <Update Inv_Date="${currentDate.toISOString().split('T')[0]}" Quantity="${quantity}" Room_Type="${room_type}" Task="Add"/>
+      const dia = currentDate.toISOString().split('T')[0];
+      if (!saltar.has(dia)) {
+        xmlRequest += `
+        <Update Inv_Date="${dia}" Quantity="${quantity}" Room_Type="${room_type}" Task="Add"/>
       `;
+        enviados++;
+      }
       currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    // Nada que decir: no se manda una peticion vacia, pero SI queda en la bitacora
+    // para que la auditoria vea que el movimiento existio y no genero trafico.
+    if (enviados === 0) {
+      await registrarBitacora(poolClient, schema, {
+        id_reserva, id_grupo, id_habitacion,
+        fecha_inicio, fecha_fin,
+        xml: null,
+        respuesta: 'sin cambios de inventario',
+        tipo_movimiento,
+      });
+      return { validate: true, enviados: 0 };
     }
 
     xmlRequest += `
@@ -98,45 +172,23 @@ async function ActualizarOrbeBloqueoAgregar(room_type, fecha_inicio, fecha_fin, 
       headers: { "Content-Type": "text/xml" },
     });
 
-    console.log({response});
+    // El cuerpo se guarda junto al XML: en SOAP el fallo viaja DENTRO de un 200, y
+    // `respuesta` es un varchar(191) donde no entra. Ver docs/orbe-api.md (B2).
+    const cuerpo = typeof response.data === 'string' ? response.data : JSON.stringify(response.data);
+    const hayFault = /fault/i.test(cuerpo || '');
+    if (hayFault) {
+      console.error(`[ORBE] ${tipo_movimiento}: Fault en la respuesta`, cuerpo);
+    }
 
-    // Registro en bitácora
-    const bitacora = {
-      user_id: 0,
-      reserva_id: id_reserva ? parseInt(id_reserva) : null,
-      grupo_id: id_grupo ? parseInt(id_grupo) : null,
-      habitacion_id: id_habitacion ? parseInt(id_habitacion) : null,
-      fecha_llegada_anterior: formatDate(fecha_inicio),
-      fecha_salida_anterior: formatDate(fecha_fin),
-      fecha_llegada_actual: formatDate(fecha_inicio),
-      fecha_salida_actual: formatDate(fecha_fin),
-      xml: xmlRequest,
+    await registrarBitacora(poolClient, schema, {
+      id_reserva, id_grupo, id_habitacion,
+      fecha_inicio, fecha_fin,
+      xml: `${xmlRequest}\n<!-- RESPUESTA ${response.status} -->\n${cuerpo}`,
       respuesta: `resp: ${response.status}`,
-      tipo_movimiento: "Anular reserva",
-    };
+      tipo_movimiento,
+    });
 
-    const insertBitacoraQuery = `
-      INSERT INTO ${schema}.tbl_bitacoras (
-        user_id, reserva_id, grupo_id, habitacion_id, fecha_llegada_anterior, fecha_salida_anterior,
-        fecha_llegada_actual, fecha_salida_actual, xml, respuesta, tipo_movimiento, created_at, updated_at
-      )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-    `;
-    await poolClient.query(insertBitacoraQuery, [
-      bitacora.user_id,
-      bitacora.reserva_id,
-      bitacora.grupo_id,
-      bitacora.habitacion_id,
-      bitacora.fecha_llegada_anterior,
-      bitacora.fecha_salida_anterior,
-      bitacora.fecha_llegada_actual,
-      bitacora.fecha_salida_actual,
-      bitacora.xml,
-      bitacora.respuesta,
-      bitacora.tipo_movimiento,
-    ]);
-
-    return { validate: true };
+    return { validate: !hayFault, enviados };
   } catch (error) {
     console.error("Error en ActualizarOrbeBloqueoAgregar:", error.message);
     throw error;
@@ -145,4 +197,4 @@ async function ActualizarOrbeBloqueoAgregar(room_type, fecha_inicio, fecha_fin, 
   }
 }
 
-module.exports = { saveReservaDetail, ActualizarOrbeBloqueoAgregar };
+module.exports = { saveReservaDetail, ActualizarOrbeBloqueoAgregar, nochesDe };

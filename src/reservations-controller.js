@@ -1,6 +1,6 @@
 const { Pool } = require("pg");
 const { limpiarTexto } = require("./utils");
-const { saveReservaDetail, ActualizarOrbeBloqueoAgregar } = require("./orbe");
+const { saveReservaDetail, ActualizarOrbeBloqueoAgregar, nochesDe } = require("./orbe");
 
 // Conexión a la base de datos
 const pool = new Pool({
@@ -153,7 +153,7 @@ const crearReservaciones = async (data, schema) => {
           const oldDatesQuery = `SELECT g.check_in_fecha, g.check_out_fecha, d.id_reservas_grupo,d.id_habitacion_tipo AS type_code
             FROM ${schema}.tbl_reservas_grupo g
             JOIN ${schema}.tbl_reservas_detalle d ON g.id = d.id_reservas_grupo
-            WHERE g.id_reservas = $1`;
+            WHERE g.id_reservas = $1 AND g.deleted_at IS NULL AND d.deleted_at IS NULL`;
           const oldDatesResult = await pool.query(oldDatesQuery, [reservaId]);
           console.log({ oldDatesResult })
           let oldRoomTypes = oldDatesResult.rows.map(row => ({
@@ -224,11 +224,36 @@ const crearReservaciones = async (data, schema) => {
             if (habitacionResult.rows.length) {
               const room_type = habitacionResult.rows[0].room_type;
               const count = oldRoomTypes.filter(rt => rt.Type_Code == typeCode).length;
+
+              // Las noches que la estadia NUEVA sigue ocupando NO se liberan. Antes
+              // se devolvia el rango viejo completo: en un Modify que corre la
+              // estadia un dia —el caso normal— se liberaban noches con el huesped
+              // dentro, y Orbe pasaba a ofrecer una habitacion ocupada.
+              // Ver docs/orbe-api.md (G5).
+              const rtsNuevos = Array.isArray(data.ROOM_TYPES && data.ROOM_TYPES.ROOM_TYPE)
+                ? data.ROOM_TYPES.ROOM_TYPE
+                : (data.ROOM_TYPES && data.ROOM_TYPES.ROOM_TYPE ? [data.ROOM_TYPES.ROOM_TYPE] : []);
+
+              const nochesNuevas = new Set();
+              for (const rt of rtsNuevos) {
+                if (rt.Status === "Cancelled") continue;
+                // Solo cuenta como solapamiento si es el MISMO tipo: cambiar de tipo
+                // si libera el viejo, aunque las fechas coincidan.
+                const mismoTipo = String(rt.Type_Code) === String(oldRoomType.Type_Code)
+                  || String(rt.Type_Code) === String(typeCode);
+                if (!mismoTipo) continue;
+                for (const n of nochesDe(rt.Arrival, rt.Departure)) nochesNuevas.add(n);
+              }
+
               try {
-                await ActualizarOrbeBloqueoAgregar(room_type, oldRoomType.Arrival, oldRoomType.Departure, null, null, null, schema, count);
-                console.log("Inventario aumentado para fechas anteriores");
+                await ActualizarOrbeBloqueoAgregar(
+                  room_type, oldRoomType.Arrival, oldRoomType.Departure,
+                  null, null, null, schema, count,
+                  [...nochesNuevas], "Modificacion OTA (liberar noches viejas)"
+                );
+                console.log("Inventario liberado para las noches que ya no se ocupan");
               } catch (error) {
-                console.error("Error al aumentar inventario para fechas anteriores:", error.message);
+                console.error("Error al liberar inventario de fechas anteriores:", error.message);
               }
             }
           }
@@ -384,7 +409,7 @@ const crearReservaciones = async (data, schema) => {
               const room_type = habitacionResult.rows[0].room_type;
               const count = roomTypes.filter(rt => rt.Type_Code === typeCode && rt.Status === "Cancelled").length;
               try {
-                await ActualizarOrbeBloqueoAgregar(room_type, roomType.Arrival, roomType.Departure, null, null, null, schema, count);
+                await ActualizarOrbeBloqueoAgregar(room_type, roomType.Arrival, roomType.Departure, null, null, null, schema, count, [], "Anulacion OTA");
                 console.log("Sincronizado con Orbe para", typeCode, "con count:", count);
               } catch (error) {
                 console.error("Imposible sincronizar con Orbe:", error.message);
