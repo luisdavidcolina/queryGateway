@@ -1,6 +1,6 @@
 const { Pool } = require("pg");
 const { limpiarTexto } = require("./utils");
-const { saveReservaDetail, ActualizarOrbeBloqueoAgregar, nochesDe } = require("./orbe");
+const { saveReservaDetail, registrarEventoOrbeSinEnvio } = require("./orbe");
 
 // Conexión a la base de datos
 const pool = new Pool({
@@ -245,16 +245,26 @@ const crearReservaciones = async (data, schema) => {
                 for (const n of nochesDe(rt.Arrival, rt.Departure)) nochesNuevas.add(n);
               }
 
-              try {
-                await ActualizarOrbeBloqueoAgregar(
-                  room_type, oldRoomType.Arrival, oldRoomType.Departure,
-                  null, null, null, schema, count,
-                  [...nochesNuevas], "Modificacion OTA (liberar noches viejas)"
-                );
-                console.log("Inventario liberado para las noches que ya no se ocupan");
-              } catch (error) {
-                console.error("Error al liberar inventario de fechas anteriores:", error.message);
-              }
+              // ⛔ NO se le manda nada a Orbe.
+              //
+              // Orbe gestiona su propio cupo para SUS propias reservas: cuando la
+              // OTA modifica, Orbe ajusta su inventario solo. El `+1` que se
+              // mandaba aca era una SEGUNDA devolucion del mismo cupo, y dejaba a
+              // Orbe ofreciendo una habitacion que ya estaba vendida.
+              //
+              // Probado el 22-ago-2026 en Volcano Lodge (una habitacion por tipo):
+              // de 15 reservas de OTA, las UNICAS dos con discrepancia fueron las
+              // que venian de un `Modify` y de un `Cancelled` — las dos ramas que
+              // mandaban `+1`. Las de `Create`, que no mandan nada, cuadraron todas.
+              //
+              // El rastro si queda: perder el registro del evento es lo que impidio
+              // encontrar esto durante meses. Ver docs/orbe-api.md.
+              await registrarEventoOrbeSinEnvio(schema, {
+                id_reserva: reservaId,
+                desde: oldRoomType.Arrival,
+                hasta: oldRoomType.Departure,
+                tipo_movimiento: 'Modificacion OTA (Orbe ajusta solo)',
+              });
             }
           }
         } catch (error) {
@@ -408,12 +418,14 @@ const crearReservaciones = async (data, schema) => {
             if (habitacionResult.rows.length) {
               const room_type = habitacionResult.rows[0].room_type;
               const count = roomTypes.filter(rt => rt.Type_Code === typeCode && rt.Status === "Cancelled").length;
-              try {
-                await ActualizarOrbeBloqueoAgregar(room_type, roomType.Arrival, roomType.Departure, null, null, null, schema, count, [], "Anulacion OTA");
-                console.log("Sincronizado con Orbe para", typeCode, "con count:", count);
-              } catch (error) {
-                console.error("Imposible sincronizar con Orbe:", error.message);
-              }
+              // ⛔ NO se le manda nada a Orbe: al cancelar, Orbe se devuelve su
+              // propio cupo. Ver el comentario de la rama Modify, mas arriba.
+              await registrarEventoOrbeSinEnvio(schema, {
+                id_reserva: reservaId,
+                desde: roomType.Arrival,
+                hasta: roomType.Departure,
+                tipo_movimiento: 'Anulacion OTA (Orbe ajusta solo)',
+              });
             }
           }
         }

@@ -211,4 +211,47 @@ async function ActualizarOrbeBloqueoAgregar(room_type, fecha_inicio, fecha_fin, 
   }
 }
 
-module.exports = { saveReservaDetail, ActualizarOrbeBloqueoAgregar, nochesDe };
+/**
+ * Deja constancia de un evento de Orbe SIN mandarle nada.
+ *
+ * POR QUE NO SE LE MANDA NADA
+ * ---------------------------
+ * Orbe gestiona su propio cupo para SUS propias reservas: cuando una OTA vende,
+ * cancela o modifica, Orbe ajusta su inventario solo. Devolverle el cupo desde
+ * aca es una SEGUNDA devolucion del mismo cupo, y deja a Orbe ofreciendo una
+ * habitacion que ya no existe.
+ *
+ * Medido el 22-ago-2026 en Volcano Lodge, que tiene una sola habitacion por
+ * tipo. De 15 reservas de OTA del periodo, las unicas dos que produjeron
+ * discrepancia fueron las que venian de un `Cancelled` y de un `Modify` —
+ * justamente las dos ramas que mandaban `+1`. Las seis de `Create`, que no
+ * mandan nada, cuadraron todas.
+ *
+ *   5126  Nov 22-27  <- Cancelled + Create   -> 5 discrepancias
+ *   5128  Ago 23-24  <- Modify                -> 1 discrepancia
+ *   5132, 5134, 5135, 5140  <- Create         -> ninguna
+ *
+ * El rastro SI queda: perder el registro del evento es lo que impidio encontrar
+ * esto durante meses. Ver docs/orbe-api.md en el repo del PMS.
+ */
+async function registrarEventoOrbeSinEnvio(schema, datos) {
+  const poolClient = await pool.connect();
+  try {
+    await registrarBitacora(poolClient, schema, {
+      id_reserva: datos.id_reserva || null,
+      id_grupo: null,
+      id_habitacion: null,
+      fecha_inicio: datos.desde,
+      fecha_fin: datos.hasta,
+      xml: null,
+      respuesta: 'sin envio: Orbe gestiona su propio cupo',
+      tipo_movimiento: datos.tipo_movimiento,
+    });
+  } catch (e) {
+    console.error('[ORBE] no se pudo registrar el evento sin envio:', e.message);
+  } finally {
+    poolClient.release();
+  }
+}
+
+module.exports = { saveReservaDetail, ActualizarOrbeBloqueoAgregar, nochesDe, registrarEventoOrbeSinEnvio };
