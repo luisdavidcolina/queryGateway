@@ -12,6 +12,9 @@ const pool = new Pool({
 });
 
 // Normaliza un nombre para comparar sin importar mayúsculas, acentos, espacios ni signos.
+/** 'YYYY-MM-DD' a partir de lo que mande la OTA. */
+const limpiarFecha = (v) => String(v || '').slice(0, 10);
+
 const normalizarNombre = (texto) => limpiarTexto(texto || "").replace(/\./g, "");
 
 // Deja constancia de una anulación de Orbe que no se pudo cruzar con ninguna reserva,
@@ -137,6 +140,10 @@ const crearReservaciones = async (data, schema) => {
 
     const isModify = data.Action === "Modify";
 
+    // La reserva que se esta modificando. Vive fuera del try para poder
+    // REUTILIZARLA al recrear los grupos, en vez de crear una reserva nueva.
+    let reservaModificada = null;
+
     // Comprobar tipo de acción
     if (data.Action === "Create" || data.Action === "Modify") {
       console.log(data.Action === "Modify" ? "Modificación de reserva" : "Creación de reserva");
@@ -207,6 +214,7 @@ const crearReservaciones = async (data, schema) => {
           }
 
           console.log(`[ORBE] Modify identificado por ${via}: reserva ${reservaId}`);
+          reservaModificada = reservaId;
 
           // Buscar grupos anteriores
           const gruposQuery = `SELECT id, check_in_fecha, check_out_fecha FROM ${schema}.tbl_reservas_grupo WHERE id_reservas = $1`;
@@ -392,7 +400,38 @@ const crearReservaciones = async (data, schema) => {
       const roomTypes = Array.isArray(data.ROOM_TYPES.ROOM_TYPE)
         ? data.ROOM_TYPES.ROOM_TYPE
         : [data.ROOM_TYPES.ROOM_TYPE];
-      let id_reserva = null;
+      // ⚠️ EN UN Modify SE REUTILIZA LA RESERVA, no se crea otra.
+      //
+      // Antes se entraba aca con `null` y `saveReservaDetail` insertaba una fila
+      // nueva en tbl_reservas. La vieja quedaba sin ningun grupo vivo pero sin
+      // borrar —tbl_reservas no tiene borrado blando— y seguia contando en todo
+      // reporte que mire esa tabla sin comprobar que tenga habitaciones.
+      //
+      // Medido el 25-ago-2026: mas de 2.100 reservas en esa situacion entre los
+      // cuatro hoteles, y tres de ellas con pagos encima. Ver
+      // docs/auditoria-datos-reservas.md §3.
+      let id_reserva = isModify ? reservaModificada : null;
+
+      // Si se reutiliza, hay que poner al dia sus fechas: `saveReservaDetail`
+      // solo las escribe cuando crea la reserva.
+      if (id_reserva) {
+        const primera = roomTypes.find(rt => rt.Status !== "Cancelled");
+        if (primera) {
+          try {
+            await pool.query(
+              `UPDATE ${schema}.tbl_reservas
+                  SET check_in_fecha = $1, check_out_fecha = $2,
+                      ota_reserva_id = coalesce(ota_reserva_id, $3), updated_at = CURRENT_TIMESTAMP
+                WHERE id = $4`,
+              [limpiarFecha(primera.Arrival), limpiarFecha(primera.Departure),
+               (data.Res_Code || data.Booking_Code || '').toString().trim() || null, id_reserva]
+            );
+          } catch (e) {
+            console.error('[ORBE] no se pudieron actualizar las fechas de la reserva:', e.message);
+          }
+        }
+      }
+
       for (const [index, roomType] of roomTypes.entries()) {
         try {
           if (roomType.Status !== "Cancelled") {
