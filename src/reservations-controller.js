@@ -62,6 +62,24 @@ const buscarReservaParaAnular = async (data, email, schema) => {
   const emailExcel = `${(data.Global_Name || "").toUpperCase()}_${(data.Global_Surname || "").replace(/\s+/g, "").toUpperCase()}@mail.com`;
   const emailsPosibles = [...new Set([email, emailExcel].filter(Boolean).map((e) => e.toLowerCase()))];
 
+  // 0) POR LOCALIZADOR DE LA OTA — el unico identificador que no cambia.
+  //
+  // Va primero a proposito. El correo NO sirve como identificador: Expedia manda
+  // direcciones anonimas y genera una distinta en cada mensaje, y las reservas
+  // cargadas por Excel llevan un correo sintetico (`NOMBRE_APELLIDO@mail.com`)
+  // que no se parece al de la OTA. Los dos casos hicieron que se descartaran
+  // modificaciones en silencio durante meses.
+  const localizador = (data.Res_Code || data.Booking_Code || "").toString().trim();
+  if (localizador) {
+    const porLocalizador = await pool.query(
+      `SELECT id FROM ${schema}.tbl_reservas WHERE ota_reserva_id = $1 ORDER BY id DESC LIMIT 1`,
+      [localizador]
+    );
+    if (porLocalizador.rows.length) {
+      return { reservaId: porLocalizador.rows[0].id, via: "localizador" };
+    }
+  }
+
   // 1) Por correo (cualquiera de los formatos)
   const porEmail = await pool.query(
     `SELECT r.id
