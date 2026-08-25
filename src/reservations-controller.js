@@ -126,23 +126,69 @@ const crearReservaciones = async (data, schema) => {
       // Eliminar reserva existente en caso de Modify
       if (data.Action === "Modify") {
         try {
-          // Buscar cliente por email
-          const clienteQuery = `SELECT id FROM ${schema}.tbl_clientes WHERE email = $1 ORDER BY id DESC LIMIT 1`;
-          const clienteResult = await pool.query(clienteQuery, [email]);
-          if (!clienteResult.rows.length) {
-            console.error("No se encontró cliente con email", email);
-            return;
-          }
-          const clienteId = clienteResult.rows[0].id;
+          // Identificar la reserva a modificar.
+          //
+          // ⚠️ POR LOCALIZADOR PRIMERO, NO POR CORREO. Expedia manda direcciones
+          // anonimas y genera una DISTINTA para el Modify que para el Create, asi
+          // que buscar por correo no la encuentra y la modificacion se descartaba
+          // en silencio: el PMS se quedaba con las fechas viejas y nadie se
+          // enteraba hasta que el huesped llegaba —o no llegaba—.
+          //
+          // Caso real (Volcano Lodge, 25-ago-2026): OTA-2542478954-24, Carol
+          // Hendrickson. Expedia la modifico al 6-13 de septiembre y el PMS siguio
+          // mostrando 7-12. Tres casos desde mayo, los tres de Expedia; los de
+          // Booking funcionaban porque su correo no cambia.
+          const localizador = (data.Res_Code || data.Booking_Code || '').toString().trim();
+          let reservaId = null;
+          let via = null;
 
-          // Buscar reserva existente
-          const reservaQuery = `SELECT id FROM ${schema}.tbl_reservas WHERE id_cliente = $1 ORDER BY id DESC LIMIT 1`;
-          const reservaResult = await pool.query(reservaQuery, [clienteId]);
-          if (!reservaResult.rows.length) {
-            console.error("No se encontró reserva para cliente", clienteId);
+          if (localizador) {
+            const porLocalizador = await pool.query(
+              `SELECT id FROM ${schema}.tbl_reservas WHERE ota_reserva_id = $1 ORDER BY id DESC LIMIT 1`,
+              [localizador]
+            );
+            if (porLocalizador.rows.length) {
+              reservaId = porLocalizador.rows[0].id;
+              via = 'localizador';
+            }
+          }
+
+          // Respaldo por correo: las reservas anteriores al alta del localizador no
+          // lo tienen guardado, y las de Booking si mantienen el correo estable.
+          if (!reservaId) {
+            const clienteResult = await pool.query(
+              `SELECT id FROM ${schema}.tbl_clientes WHERE email = $1 ORDER BY id DESC LIMIT 1`,
+              [email]
+            );
+            if (clienteResult.rows.length) {
+              const reservaResult = await pool.query(
+                `SELECT id FROM ${schema}.tbl_reservas WHERE id_cliente = $1 ORDER BY id DESC LIMIT 1`,
+                [clienteResult.rows[0].id]
+              );
+              if (reservaResult.rows.length) {
+                reservaId = reservaResult.rows[0].id;
+                via = 'correo';
+              }
+            }
+          }
+
+          // Ultimo recurso: las MISMAS fechas y el mismo apellido. Rescata las que
+          // no tienen localizador y cambiaron de correo.
+          if (!reservaId) {
+            const buscada = await buscarReservaParaAnular(data, email, schema);
+            if (buscada) { reservaId = buscada.reservaId; via = buscada.via; }
+          }
+
+          // ⛔ NO se descarta en silencio. Si no se identifica, queda registrado
+          // para que recepcion lo aplique a mano: una modificacion perdida es una
+          // habitacion que el hotel cree libre y no lo esta, o al reves.
+          if (!reservaId) {
+            await registrarAnulacionSinMatch(schema, data, 'Modify sin identificar — aplicar a mano');
+            console.error('[ORBE] MODIFY SIN IDENTIFICAR', localizador, email);
             return;
           }
-          const reservaId = reservaResult.rows[0].id;
+
+          console.log(`[ORBE] Modify identificado por ${via}: reserva ${reservaId}`);
 
           // Buscar grupos anteriores
           const gruposQuery = `SELECT id, check_in_fecha, check_out_fecha FROM ${schema}.tbl_reservas_grupo WHERE id_reservas = $1`;

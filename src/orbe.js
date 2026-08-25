@@ -39,12 +39,27 @@ async function saveReservaDetail(data_detail, cliente_id, data, id_reserva, Book
         fuente_reserva_id: fuente.id,
         huespedes_cantidad: (parseInt(data.Adults || 0) + parseInt(data.Children || 0) + parseInt(data.Infants || 0))
       };
+      // Se guarda el LOCALIZADOR de la OTA. Es lo unico que identifica una reserva
+      // sin ambiguedad a lo largo de sus modificaciones.
+      //
+      // ⚠️ EXPEDIA CAMBIA EL CORREO EN CADA MENSAJE. Manda direcciones anonimas
+      // (`mt1q0ai4u8@m.expediapartnercentral.com`) y genera una distinta para el
+      // Modify que para el Create. Buscar la reserva por correo hace que la
+      // modificacion NO SE ENCUENTRE y se descarte en silencio: el PMS se queda
+      // con las fechas viejas y nadie se entera.
+      //
+      // Caso real (Volcano Lodge, 25-ago-2026): OTA-2542478954-24, Carol
+      // Hendrickson. Expedia la modifico al 6-13 de septiembre y el PMS siguio
+      // mostrando 7-12. Recepcion lo detecto a mano. Tres casos desde mayo, los
+      // tres de Expedia; los de Booking funcionan porque su correo no cambia.
+      const localizador = (data.Res_Code || data.Booking_Code || '').toString().trim() || null;
+
       const insertQuery = `
-        INSERT INTO ${schema}.tbl_reservas (id_cliente, check_in_fecha, check_out_fecha, fuente_reserva_id, huespedes_cantidad, created_at, updated_at)
-        VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        INSERT INTO ${schema}.tbl_reservas (id_cliente, check_in_fecha, check_out_fecha, fuente_reserva_id, huespedes_cantidad, ota_reserva_id, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
         RETURNING id
       `;
-      const reservaResult = await poolClient.query(insertQuery, [reserva.id_cliente, reserva.check_in_fecha, reserva.check_out_fecha, reserva.fuente_reserva_id, reserva.huespedes_cantidad]);
+      const reservaResult = await poolClient.query(insertQuery, [reserva.id_cliente, reserva.check_in_fecha, reserva.check_out_fecha, reserva.fuente_reserva_id, reserva.huespedes_cantidad, localizador]);
       id_reserva = reservaResult.rows[0].id;
     }
 
