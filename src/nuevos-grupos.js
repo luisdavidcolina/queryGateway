@@ -12,7 +12,24 @@ async function CreaarReservaDetalle(ROOM_TYPE, reserva, precio, cliente, id_grup
   const poolClient = await pool.connect();
 
   try {
-    const impuestoQuery = `SELECT valor FROM  ${schema}.tbl_impuestos WHERE principal = true LIMIT 1`;
+    // ⚠️ FILTRAR LOS BORRADOS Y ORDENAR. Sin `deleted_at IS NULL` y sin ORDER BY,
+    // Postgres devuelve la fila que le resulte mas barata de leer, y en la
+    // practica es la primera: la vieja.
+    //
+    // Once de los catorce schemas tienen DOS filas con `principal = true` —una
+    // viva y una borrada en 2019— y en seis de ellos la borrada tiene otro valor:
+    //
+    //   selvacolor  traia 18 (Peru, borrada 2019)  cuando el vigente es 13 (Costa Rica)
+    //   kamana      traia 18                       cuando el vigente es 10
+    //   bramador    traia 18                       cuando el vigente es 19
+    //
+    // El efecto: `precio_neto` se calcula dividiendo por la tasa equivocada y
+    // `numero_impuesto` se guarda mal en cada noche, asi que el reporte de ventas
+    // liquida con un porcentaje que no corresponde. En Selva Color afecta a toda
+    // reserva de OTA desde que se conecto, el 17-jul-2026.
+    const impuestoQuery = `SELECT valor FROM ${schema}.tbl_impuestos
+                            WHERE principal = true AND deleted_at IS NULL
+                            ORDER BY id DESC LIMIT 1`;
     const impuestoResult = await poolClient.query(impuestoQuery);
     if (!impuestoResult.rows.length) throw new Error("Impuesto principal no encontrado");
     const impuestoPct = parseFloat(impuestoResult.rows[0].valor) || 0; // ej. 13 (%)
