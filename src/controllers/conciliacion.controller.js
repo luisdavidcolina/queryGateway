@@ -106,13 +106,20 @@ const registrarConciliacion = async (req, res) => {
         tipo_movimiento: "Conciliacion Orbe",
         desde: dia(h.desde, hoy),
         hasta: dia(h.hasta, hoy),
+        // La version va en el texto, no solo en el JSON: es lo primero que hay
+        // que mirar cuando una corrida da numeros raros. El 11-sep-2026 habia
+        // dos instalaciones distintas corriendo sobre los mismos hoteles, y la
+        // vieja era la que aplicaba las correcciones. Sin este dato hubo que
+        // deducirlo comparando que campos traia el JSON de cada corrida.
         respuesta:
           `discrepancias: ${h.discrepancias || 0}` +
           ` · corregidas: ${h.corregidas || 0}` +
-          ` · fechas: ${h.fechas || 0}`,
+          ` · fechas: ${h.fechas || 0}` +
+          ` · v${cuerpo.version || "?"}`,
         detalle: JSON.stringify(
           {
             corrida: cuerpo.corrida_id || null,
+            version: cuerpo.version || null,
             hotel: h.hotel,
             inicio: cuerpo.inicio || null,
             fin: cuerpo.fin || null,
