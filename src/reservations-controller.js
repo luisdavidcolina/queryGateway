@@ -1,6 +1,6 @@
 const { Pool } = require("pg");
 const { limpiarTexto } = require("./utils");
-const { saveReservaDetail, registrarEventoOrbeSinEnvio } = require("./orbe");
+const { saveReservaDetail, registrarEventoOrbeSinEnvio, ActualizarOrbeBloqueoAgregar } = require("./orbe");
 
 // Conexión a la base de datos
 const pool = new Pool({
@@ -521,14 +521,27 @@ const crearReservaciones = async (data, schema) => {
             if (habitacionResult.rows.length) {
               const room_type = habitacionResult.rows[0].room_type;
               const count = roomTypes.filter(rt => rt.Type_Code === typeCode && rt.Status === "Cancelled").length;
-              // ⛔ NO se le manda nada a Orbe: al cancelar, Orbe se devuelve su
-              // propio cupo. Ver el comentario de la rama Modify, mas arriba.
-              await registrarEventoOrbeSinEnvio(schema, {
-                id_reserva: reservaId,
-                desde: roomType.Arrival,
-                hasta: roomType.Departure,
-                tipo_movimiento: 'Anulacion OTA (Orbe ajusta solo)',
-              });
+              // SI se le devuelve el cupo a Orbe. Orbe NO se lo devuelve solo al
+              // cancelar: lo comprobo Luisdavid el 15-sep-2026 con Booking. Muchas
+              // correcciones del comparador que le "subian" el cupo a Orbe eran
+              // justo reservas canceladas cuyo cupo el PMS nunca devolvio.
+              //
+              // El commit 76493f8 (22-ago-2026) habia quitado este envio por una
+              // deduccion hecha con datos de Volcano ("Orbe ajusta solo") que
+              // resulto falsa. Desde entonces cada cancelacion de OTA dejaba una
+              // habitacion de menos a la venta en Orbe.
+              //
+              // Este proceso es el UNICO que lee reservas de Orbe (la lectura desde
+              // PHP esta apagada desde el 26-ago), asi que no hay doble devolucion.
+              try {
+                await ActualizarOrbeBloqueoAgregar(
+                  room_type, roomType.Arrival, roomType.Departure,
+                  null, null, reservaId, schema, count, [],
+                  "Anulacion OTA (PMS devuelve cupo)"
+                );
+              } catch (error) {
+                console.error("Anulacion OTA: no se pudo devolver el cupo a Orbe:", error.message);
+              }
             }
           }
         }
