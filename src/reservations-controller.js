@@ -1,6 +1,6 @@
 const { Pool } = require("pg");
 const { limpiarTexto } = require("./utils");
-const { saveReservaDetail, registrarEventoOrbeSinEnvio, ActualizarOrbeBloqueoAgregar } = require("./orbe");
+const { saveReservaDetail, registrarEventoOrbeSinEnvio, ActualizarOrbeBloqueoAgregar, nochesDe } = require("./orbe");
 
 // Conexión a la base de datos
 const pool = new Pool({
@@ -317,26 +317,27 @@ const crearReservaciones = async (data, schema) => {
                 for (const n of nochesDe(rt.Arrival, rt.Departure)) nochesNuevas.add(n);
               }
 
-              // ⛔ NO se le manda nada a Orbe.
+              // SI se devuelven a Orbe las noches viejas que ya no se ocupan.
               //
-              // Orbe gestiona su propio cupo para SUS propias reservas: cuando la
-              // OTA modifica, Orbe ajusta su inventario solo. El `+1` que se
-              // mandaba aca era una SEGUNDA devolucion del mismo cupo, y dejaba a
-              // Orbe ofreciendo una habitacion que ya estaba vendida.
+              // La regla, confirmada por Luisdavid el 15-sep-2026: Orbe SOLO BAJA
+              // inventario (al crear, y en una modificacion baja las noches nuevas),
+              // pero NUNCA lo sube. Subir lo hace unicamente el PMS. Asi que en un
+              // Modify las noches viejas que no estan en la reserva nueva hay que
+              // devolverlas aqui, o quedan descontadas para siempre.
               //
-              // Probado el 22-ago-2026 en Volcano Lodge (una habitacion por tipo):
-              // de 15 reservas de OTA, las UNICAS dos con discrepancia fueron las
-              // que venian de un `Modify` y de un `Cancelled` — las dos ramas que
-              // mandaban `+1`. Las de `Create`, que no mandan nada, cuadraron todas.
-              //
-              // El rastro si queda: perder el registro del evento es lo que impidio
-              // encontrar esto durante meses. Ver docs/orbe-api.md.
-              await registrarEventoOrbeSinEnvio(schema, {
-                id_reserva: reservaId,
-                desde: oldRoomType.Arrival,
-                hasta: oldRoomType.Departure,
-                tipo_movimiento: 'Modificacion OTA (Orbe ajusta solo)',
-              });
+              // El commit 76493f8 (22-ago-2026) habia quitado este envio por una
+              // deduccion con datos de Volcano ("Orbe ajusta solo") que era falsa.
+              // Se excluyen las noches que siguen ocupadas por la reserva nueva del
+              // mismo tipo, para no devolver cupo que sigue vendido.
+              try {
+                await ActualizarOrbeBloqueoAgregar(
+                  room_type, oldRoomType.Arrival, oldRoomType.Departure,
+                  null, null, reservaId, schema, count,
+                  [...nochesNuevas], "Modificacion OTA (PMS libera noches viejas)"
+                );
+              } catch (error) {
+                console.error("Modificacion OTA: no se pudo liberar el cupo viejo en Orbe:", error.message);
+              }
             }
           }
         } catch (error) {
