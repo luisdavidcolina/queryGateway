@@ -7,7 +7,7 @@ app.use(cors())
 
 // middlewares
 app.use(express.text());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' })); // una corrida con 2027 manda cientos de filas: el limite de 100kb la rechazaba sin avisar
 app.use(express.urlencoded({extended: false}));
 
 // Routes
